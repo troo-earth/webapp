@@ -7,6 +7,7 @@ import { InputField } from '@/components/ui/InputField';
 import { Button } from '@/components/ui/Button';
 import type { LoginFormData } from '../../types/authTypes';
 import { loginSchema } from '../../utils/authSchema';
+import { useNavigate } from '@tanstack/react-router';
 
 
 interface LoginModalProps {
@@ -14,6 +15,9 @@ interface LoginModalProps {
 }
 
 export const LoginModal: React.FC<LoginModalProps> = ({ onLoginSuccess }) => {
+
+  const navigate = useNavigate()
+
   const [formData, setFormData] = useState<LoginFormData>({
     identifier: '',
     password: '',
@@ -144,7 +148,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onLoginSuccess }) => {
               </span>
               <button 
                 type="button" 
-                className="bg-transparent p-0 h-auto text-sm font-black text-primary hover:underline hover:bg-transparent shadow-none"
+                className="bg-transparent p-0 h-auto text-sm font-black text-primary hover:bg-transparent cursor-pointer shadow-none"
+                onClick={() => navigate({to:"/register"})}
               >
                 Create Account
               </button>

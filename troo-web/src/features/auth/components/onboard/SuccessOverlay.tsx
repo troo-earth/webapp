@@ -1,4 +1,4 @@
-import { Building2, LayoutDashboard } from "lucide-react";
+import { LayoutDashboard } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const SuccessOverlay = () => {
@@ -26,11 +26,10 @@ const SuccessOverlay = () => {
                         <div className="absolute inset-0 bg-primary rounded-full blur-[60px] opacity-30 animate-pulse"></div>
                         <div className="relative w-24 h-24 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl flex items-center justify-center shadow-2xl overflow-hidden">
                             <div className="absolute inset-0 opacity-[0.05] bg-[linear-gradient(rgba(255,255,255,0.5)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.5)_1px,transparent_1px)] bg-size-[10px_10px]"></div>
-                            <Building2 className="absolute text-white/10 w-16 h-16 translate-y-3 scale-110" strokeWidth={1} />
                             <div className="relative z-10 animate-float-slow">
-                                <LayoutDashboard className="text-[#A3E635] w-10 h-10 drop-shadow-[0_0_15px_rgba(163,230,53,0.3)]" strokeWidth={1.5} />
+                                <LayoutDashboard className="text-primary w-10 h-10 drop-shadow-[0_0_15px_rgba(163,230,53,0.3)]" strokeWidth={1.5} />
                             </div>
-                            <div className="absolute top-3 right-3 w-1.5 h-1.5 bg-[#A3E635] rounded-full shadow-[0_0_10px_#A3E635] animate-ping"></div>
+                            <div className="absolute top-3 right-3 w-1.5 h-1.5 bg-accent rounded-full shadow-[0_0_10px_#A3E635] animate-ping"></div>
                         </div>
                     </div>
 

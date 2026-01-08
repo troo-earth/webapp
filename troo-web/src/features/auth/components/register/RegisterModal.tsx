@@ -7,8 +7,12 @@ import BgGradient from '@/components/ui/BgGradient';
 import type { RegisterFormData } from '../../types/authTypes';
 import { RegisterApi } from '../../api/authApi';
 import { registerSchema } from '../../utils/authSchema';
+import { useNavigate } from '@tanstack/react-router';
 
 export const RegisterModal: React.FC<{ onRegisterSuccess?: () => void }> = ({ onRegisterSuccess }) => {
+
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState<RegisterFormData>({
     firstName: '',
     lastName: '',
@@ -151,7 +155,7 @@ export const RegisterModal: React.FC<{ onRegisterSuccess?: () => void }> = ({ on
             
             <div className="text-center flex items-center justify-center gap-2">
               <span className="text-xs text-gray-500 font-medium">Already have an account?</span>
-              <button type="button" className="text-sm font-black">
+              <button type="button" className="text-sm cursor-pointer font-black" onClick={() => navigate({to:"/login"})}>
                 Login
               </button>
             </div>

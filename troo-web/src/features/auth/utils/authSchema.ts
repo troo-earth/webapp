@@ -10,8 +10,6 @@ export const loginSchema = z.object({
     .regex(/[0-9]/, "Must contain a number")
     .regex(/[^A-Za-z0-9]/, "Must contain a special character")});
 
-export type LoginFormData = z.infer<typeof loginSchema>;
-
 
 export const registerSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -35,5 +33,3 @@ export const registerSchema = z.object({
   message: "Passwords do not match",
   path: ["confirmPassword"],
 });
-
-export type RegisterFormData = z.infer<typeof registerSchema>;
