@@ -1,6 +1,6 @@
 import './App.css';
 import { RouterProvider, createRouter } from '@tanstack/react-router';
-import { Toaster } from "react-hot-toast"; // 1. Import Toaster
+import { Toaster } from "react-hot-toast"; 
 import { routeTree } from "./routeTree.gen";
 import { useAuth } from "./hooks/auth/useAuth";
 import { queryClient } from './lib/queryClient.ts';
@@ -38,7 +38,6 @@ function App() {
                     },
                 }}
             />
-
             <RouterProvider 
                 router={router} 
                 context={{ 

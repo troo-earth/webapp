@@ -1,15 +1,14 @@
-import  { useState } from 'react';
+import React, { useState } from 'react';
 import BgGradient from '@/components/ui/BgGradient';
 import SuccessOverlay from './SuccessOverlay';
-import AuthHeader from '../../global/AuthHeader';
 import { OnboardingModal } from './OnboardingModal';
-import AuthFooter from '../../global/AuthFooter';
+import AuthHeader from '../global/AuthHeader';
+import AuthFooter from '../global/AuthFooter';
 
+export const OnboardingPage: React.FC = () => {
+  const [isSuccess, setIsSuccess] = useState<boolean>(false);
 
-export const OnboardingPage = () => {
-  const [isSuccess, setIsSuccess] = useState(false);
-
-  const handleSuccess = () => {
+  const handleSuccess = (): void => {
     setIsSuccess(true);
   };
 
@@ -30,7 +29,6 @@ export const OnboardingPage = () => {
 
       <AuthFooter/>
 
-
       <style>{`
         .animate-ping-slow { animation: ping 8s cubic-bezier(0, 0, 0.2, 1) infinite; }
         .animate-ping-delayed { animation: ping 8s cubic-bezier(0, 0, 0.2, 1) infinite; animation-delay: 4s; }
@@ -40,7 +38,6 @@ export const OnboardingPage = () => {
             animation: expandCircle 3.5s cubic-bezier(0.25, 1, 0.5, 1) forwards; 
         }
         .animate-content-slide-up {
-            /* Now starts immediately when mounted (because of conditional render) */
             animation: slideUpFade 1s ease-out forwards;
         }
         .animate-fade-in-delayed {

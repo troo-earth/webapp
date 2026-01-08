@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { ArrowRight, UploadCloud, ImagePlus, Building2, FileCheck, X} from 'lucide-react';
-import { InputField } from '../../../../../components/ui/InputField';
 import BgGradient from '@/components/ui/BgGradient';
 import { Button } from '@/components/ui/Button';
+import { InputField } from '@/components/ui/InputField';
 
 interface OnboardingModalProps {
   onSuccess: () => void;
