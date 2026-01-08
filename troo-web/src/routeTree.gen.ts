@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedDashboardLayoutRouteImport } from './routes/_authenticated/_dashboard-layout'
 import { Route as publicRegisterRouteImport } from './routes/(public)/register'
@@ -20,6 +21,11 @@ import { Route as AuthenticatedDashboardLayoutExploreRouteImport } from './route
 
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
@@ -62,6 +68,7 @@ const AuthenticatedDashboardLayoutExploreRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
   '/login': typeof publicLoginRoute
   '/register': typeof publicRegisterRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
@@ -70,6 +77,7 @@ export interface FileRoutesByFullPath {
   '/portfolio': typeof AuthenticatedDashboardLayoutPortfolioRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
   '/login': typeof publicLoginRoute
   '/register': typeof publicRegisterRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
@@ -79,6 +87,7 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/(public)/login': typeof publicLoginRoute
   '/(public)/register': typeof publicRegisterRoute
@@ -91,6 +100,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
     | '/login'
     | '/register'
     | '/onboarding'
@@ -99,6 +109,7 @@ export interface FileRouteTypes {
     | '/portfolio'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/login'
     | '/register'
     | '/onboarding'
@@ -107,6 +118,7 @@ export interface FileRouteTypes {
     | '/portfolio'
   id:
     | '__root__'
+    | '/'
     | '/_authenticated'
     | '/(public)/login'
     | '/(public)/register'
@@ -118,6 +130,7 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   publicLoginRoute: typeof publicLoginRoute
   publicRegisterRoute: typeof publicRegisterRoute
@@ -130,6 +143,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: ''
       preLoaderRoute: typeof AuthenticatedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/onboarding': {
@@ -221,6 +241,7 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 )
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   publicLoginRoute: publicLoginRoute,
   publicRegisterRoute: publicRegisterRoute,
