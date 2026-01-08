@@ -10,22 +10,38 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
+import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedDashboardLayoutRouteImport } from './routes/_authenticated/_dashboard-layout'
+import { Route as publicRegisterRouteImport } from './routes/(public)/register'
+import { Route as publicLoginRouteImport } from './routes/(public)/login'
 import { Route as AuthenticatedDashboardLayoutIndexRouteImport } from './routes/_authenticated/_dashboard-layout/index'
 import { Route as AuthenticatedDashboardLayoutMyProjectsRouteImport } from './routes/_authenticated/_dashboard-layout/MyProjects'
 import { Route as AuthenticatedDashboardLayoutInventoryRouteImport } from './routes/_authenticated/_dashboard-layout/Inventory'
-import { Route as publicAuthRegisterRouteImport } from './routes/(public)/auth/register'
-import { Route as publicAuthLoginRouteImport } from './routes/(public)/auth/login'
 
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedDashboardLayoutRoute =
   AuthenticatedDashboardLayoutRouteImport.update({
     id: '/_dashboard-layout',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const publicRegisterRoute = publicRegisterRouteImport.update({
+  id: '/(public)/register',
+  path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const publicLoginRoute = publicLoginRouteImport.update({
+  id: '/(public)/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedDashboardLayoutIndexRoute =
   AuthenticatedDashboardLayoutIndexRouteImport.update({
     id: '/',
@@ -44,27 +60,19 @@ const AuthenticatedDashboardLayoutInventoryRoute =
     path: '/Inventory',
     getParentRoute: () => AuthenticatedDashboardLayoutRoute,
   } as any)
-const publicAuthRegisterRoute = publicAuthRegisterRouteImport.update({
-  id: '/(public)/auth/register',
-  path: '/auth/register',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const publicAuthLoginRoute = publicAuthLoginRouteImport.update({
-  id: '/(public)/auth/login',
-  path: '/auth/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
-  '/auth/login': typeof publicAuthLoginRoute
-  '/auth/register': typeof publicAuthRegisterRoute
+  '/login': typeof publicLoginRoute
+  '/register': typeof publicRegisterRoute
+  '/onboarding': typeof AuthenticatedOnboardingRoute
   '/Inventory': typeof AuthenticatedDashboardLayoutInventoryRoute
   '/MyProjects': typeof AuthenticatedDashboardLayoutMyProjectsRoute
   '/': typeof AuthenticatedDashboardLayoutIndexRoute
 }
 export interface FileRoutesByTo {
-  '/auth/login': typeof publicAuthLoginRoute
-  '/auth/register': typeof publicAuthRegisterRoute
+  '/login': typeof publicLoginRoute
+  '/register': typeof publicRegisterRoute
+  '/onboarding': typeof AuthenticatedOnboardingRoute
   '/Inventory': typeof AuthenticatedDashboardLayoutInventoryRoute
   '/MyProjects': typeof AuthenticatedDashboardLayoutMyProjectsRoute
   '/': typeof AuthenticatedDashboardLayoutIndexRoute
@@ -72,9 +80,10 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/(public)/login': typeof publicLoginRoute
+  '/(public)/register': typeof publicRegisterRoute
   '/_authenticated/_dashboard-layout': typeof AuthenticatedDashboardLayoutRouteWithChildren
-  '/(public)/auth/login': typeof publicAuthLoginRoute
-  '/(public)/auth/register': typeof publicAuthRegisterRoute
+  '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/_dashboard-layout/Inventory': typeof AuthenticatedDashboardLayoutInventoryRoute
   '/_authenticated/_dashboard-layout/MyProjects': typeof AuthenticatedDashboardLayoutMyProjectsRoute
   '/_authenticated/_dashboard-layout/': typeof AuthenticatedDashboardLayoutIndexRoute
@@ -82,19 +91,27 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/auth/login'
-    | '/auth/register'
+    | '/login'
+    | '/register'
+    | '/onboarding'
     | '/Inventory'
     | '/MyProjects'
     | '/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/auth/login' | '/auth/register' | '/Inventory' | '/MyProjects' | '/'
+  to:
+    | '/login'
+    | '/register'
+    | '/onboarding'
+    | '/Inventory'
+    | '/MyProjects'
+    | '/'
   id:
     | '__root__'
     | '/_authenticated'
+    | '/(public)/login'
+    | '/(public)/register'
     | '/_authenticated/_dashboard-layout'
-    | '/(public)/auth/login'
-    | '/(public)/auth/register'
+    | '/_authenticated/onboarding'
     | '/_authenticated/_dashboard-layout/Inventory'
     | '/_authenticated/_dashboard-layout/MyProjects'
     | '/_authenticated/_dashboard-layout/'
@@ -102,8 +119,8 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
-  publicAuthLoginRoute: typeof publicAuthLoginRoute
-  publicAuthRegisterRoute: typeof publicAuthRegisterRoute
+  publicLoginRoute: typeof publicLoginRoute
+  publicRegisterRoute: typeof publicRegisterRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -115,12 +132,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/onboarding': {
+      id: '/_authenticated/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/_dashboard-layout': {
       id: '/_authenticated/_dashboard-layout'
       path: ''
       fullPath: ''
       preLoaderRoute: typeof AuthenticatedDashboardLayoutRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/(public)/register': {
+      id: '/(public)/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof publicRegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(public)/login': {
+      id: '/(public)/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof publicLoginRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/_dashboard-layout/': {
       id: '/_authenticated/_dashboard-layout/'
@@ -142,20 +180,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/Inventory'
       preLoaderRoute: typeof AuthenticatedDashboardLayoutInventoryRouteImport
       parentRoute: typeof AuthenticatedDashboardLayoutRoute
-    }
-    '/(public)/auth/register': {
-      id: '/(public)/auth/register'
-      path: '/auth/register'
-      fullPath: '/auth/register'
-      preLoaderRoute: typeof publicAuthRegisterRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/(public)/auth/login': {
-      id: '/(public)/auth/login'
-      path: '/auth/login'
-      fullPath: '/auth/login'
-      preLoaderRoute: typeof publicAuthLoginRouteImport
-      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -183,11 +207,13 @@ const AuthenticatedDashboardLayoutRouteWithChildren =
 
 interface AuthenticatedRouteChildren {
   AuthenticatedDashboardLayoutRoute: typeof AuthenticatedDashboardLayoutRouteWithChildren
+  AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardLayoutRoute:
     AuthenticatedDashboardLayoutRouteWithChildren,
+  AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
@@ -196,8 +222,8 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
-  publicAuthLoginRoute: publicAuthLoginRoute,
-  publicAuthRegisterRoute: publicAuthRegisterRoute,
+  publicLoginRoute: publicLoginRoute,
+  publicRegisterRoute: publicRegisterRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

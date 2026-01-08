@@ -1,0 +1,1 @@
+export const devPassword = import.meta.env.TROO_PASSWORD
