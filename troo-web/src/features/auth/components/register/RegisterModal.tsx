@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
-import { ArrowRight } from 'lucide-react';
+import { useMutation } from '@tanstack/react-query';
+import { ArrowRight, AlertCircle } from 'lucide-react';
 import { InputField } from '../../../../components/ui/InputField';
 import { Button } from '../../../../components/ui/Button';
+import BgGradient from '@/components/ui/BgGradient';
+import type { RegisterFormData } from '../../types/authTypes';
+import { RegisterApi } from '../../api/authApi';
+import { registerSchema } from '../../utils/authSchema';
 
-export const RegisterModal: React.FC = () => {
-  const [formData, setFormData] = useState({
+export const RegisterModal: React.FC<{ onRegisterSuccess?: () => void }> = ({ onRegisterSuccess }) => {
+  const [formData, setFormData] = useState<RegisterFormData>({
     firstName: '',
     lastName: '',
     email: '',
@@ -12,96 +17,144 @@ export const RegisterModal: React.FC = () => {
     confirmPassword: ''
   });
 
+  const [validationErrors, setValidationErrors] = useState<Partial<Record<keyof RegisterFormData, string>>>({});
+
+  const mutation = useMutation({
+    mutationFn: RegisterApi,
+    onSuccess: (data) => {
+      console.log("Registration Successful:", data);
+      if (onRegisterSuccess) onRegisterSuccess();
+    },
+    onError: (error) => {
+      console.error("Registration Failed:", error);
+    }
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Registering user:", formData);
+    setValidationErrors({});
+    
+    const result = registerSchema.safeParse(formData);
+
+    if (!result.success) {
+      const flattenedErrors = result.error.flatten().fieldErrors;
+      const errors: Partial<Record<keyof RegisterFormData, string>> = {};
+      
+      (Object.keys(flattenedErrors) as Array<keyof RegisterFormData>).forEach((key) => {
+        const fieldError = flattenedErrors[key];
+        if (fieldError && fieldError.length > 0) {
+          errors[key] = fieldError[0];
+        }
+      });
+
+      setValidationErrors(errors);
+      return;
+    }
+
+    mutation.mutate(result.data);
   };
 
   return (
-    // Slightly narrower (max-w-xl) and tighter padding (p-10) to allow more gap
-    <div className="relative w-full max-w-xl bg-white/60 backdrop-blur-xl p-8 md:p-10 rounded-[2.5rem] shadow-[0_40px_100px_-20px_rgba(0,116,115,0.08)] border border-white/80 overflow-hidden">
+    <div className="relative w-full max-w-md bg-white/60 backdrop-blur-xl p-8 md:p-10 rounded-[2.5rem] shadow-[0_40px_100px_-20px_rgba(0,116,115,0.08)] border border-white/80 overflow-hidden">
       
-      {/* --- ATMOSPHERIC GLOW EFFECTS --- */}
-      <div className="absolute inset-0 pointer-events-none">
-         <div className="absolute -top-[20%] -right-[20%] w-[80%] h-[80%] bg-[#FFB71B]/5 rounded-full blur-[100px]" />
-         <div className="absolute -bottom-[20%] -left-[20%] w-[60%] h-[60%] bg-[#007473]/2 rounded-full blur-[80px]" />
-         <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#007473_1px,transparent_1px)] bg-[size:24px_24px]" />
-      </div>
+      <BgGradient variant='secondary'/>
 
       <div className="relative z-10">
-        
-        {/* --- HEADER SECTION --- */}
-        <div className="mb-10 text-center">
+        <div className="mb-8 text-center">
            <h3 className="text-3xl font-black text-primary-gradient tracking-tight">
              Join the Ecosystem
            </h3>
+           <p className="text-xs text-gray-500 font-medium mt-2 uppercase tracking-widest">
+             Create your professional account
+           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        {mutation.isError && (
+          <div className="mb-6 p-3 rounded-xl bg-red-50 border border-red-100 flex items-center gap-2 text-red-600 animate-fade-in-up">
+            <AlertCircle size={16} />
+            <span className="text-[11px] font-bold uppercase tracking-wide">
+              {mutation.error instanceof Error ? mutation.error.message : "Registration failed"}
+            </span>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
           
-          {/* Row 1 - Name & Username */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            <InputField 
-              label="Name" 
-              placeholder="John" 
-              type="text"
-              onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-            />
-            <InputField 
-              label="Username (Optional)" 
-              placeholder="Doe" 
-              type="text"
-              onChange={(e) => setFormData({...formData, lastName: e.target.value})}
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <InputField 
+                label="First Name" 
+                placeholder="John" 
+                value={formData.firstName}
+                onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+                className={validationErrors.firstName ? "border-red-500" : ""}
+              />
+              {validationErrors.firstName && <p className="text-[10px] text-red-500 font-bold ml-1">{validationErrors.firstName}</p>}
+            </div>
+            <div className="space-y-1">
+              <InputField 
+                label="Last Name" 
+                placeholder="Doe" 
+                value={formData.lastName || ''}
+                onChange={(e) => setFormData({...formData, lastName: e.target.value})}
+              />
+            </div>
           </div>
 
-          {/* Email */}
-          <InputField 
-            label="Company Email" 
-            placeholder="john@company.com" 
-            type="email"
-            onChange={(e) => setFormData({...formData, email: e.target.value})}
-          />
+          <div className="space-y-1">
+            <InputField 
+              label="Company Email" 
+              placeholder="name@company.com" 
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({...formData, email: e.target.value})}
+              className={validationErrors.email ? "border-red-500" : ""}
+            />
+            {validationErrors.email && <p className="text-[10px] text-red-500 font-bold ml-1">{validationErrors.email}</p>}
+          </div>
 
-          {/* Row 2 - Passwords */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+         <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1">
             <InputField 
               label="Password" 
               type="password"
               placeholder="••••••••"
+              value={formData.password}
               onChange={(e) => setFormData({...formData, password: e.target.value})}
+              className={validationErrors.password ? "border-red-500" : ""}
             />
+            {validationErrors.password && <p className="text-[10px] text-red-500 font-bold ml-1">{validationErrors.password}</p>}
+          </div>
+
+          <div className="space-y-1">
             <InputField 
               label="Confirm Password" 
               type="password"
               placeholder="••••••••"
+              value={formData.confirmPassword}
               onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+              className={validationErrors.confirmPassword ? "border-red-500" : ""}
             />
+            {validationErrors.confirmPassword && <p className="text-[10px] text-red-500 font-bold ml-1">{validationErrors.confirmPassword}</p>}
           </div>
+          </div> 
 
-          {/* --- ACTIONS SECTION --- */}
-          <div className="pt-6 flex flex-col items-center gap-5">
-            
-            {/* 1. Create Button */}
+          <div className="pt-4 flex flex-col items-center gap-6">
             <Button 
               type="submit"
-              className="group w-full py-4 rounded-full bg-[#005C5C] text-white font-bold text-xs uppercase tracking-widest
-              hover:bg-[#0F1F1F] hover:shadow-lg hover:shadow-[#005C5C]/20 transition-all duration-300 flex items-center justify-center gap-3"
+              isLoading={mutation.isPending}
+              className="group w-full py-4 rounded-full bg-[#005C5C] text-white font-bold text-xs uppercase tracking-widest"
             >
-              Create Account
-              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+              {mutation.isPending ? 'Creating Account...' : 'Create Account'}
+              {!mutation.isPending && <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />}
             </Button>
             
-            {/* 2. Login Link */}
-            <div className="text-center">
-              <span className="text-xs text-gray-500 font-medium">
-                Already have an account? 
-              </span>
-              <button type="button" className="ml-2 text-sm font-black text-[#007473] hover:underline">
+            <div className="text-center flex items-center justify-center gap-2">
+              <span className="text-xs text-gray-500 font-medium">Already have an account?</span>
+              <button type="button" className="text-sm font-black">
                 Login
               </button>
             </div>
-
           </div>
         </form>
       </div>

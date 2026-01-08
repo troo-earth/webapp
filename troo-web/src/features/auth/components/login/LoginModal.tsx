@@ -1,18 +1,13 @@
 import React, { useState } from 'react';
-import { z } from 'zod';
-import { useMutation } from '@tanstack/react-query'; // Import TanStack Query
-import { ArrowRight, AlertCircle } from 'lucide-react'; // Added AlertIcon for server errors
-import { InputField } from '../../../../components/ui/InputField';
-import { Button } from '../../../../components/ui/Button';
+import { useMutation } from '@tanstack/react-query'; 
+import { ArrowRight, AlertCircle } from 'lucide-react';
 import BgGradient from '@/components/ui/BgGradient';
-import { LoginApi } from '../../api/LoginApi';
+import { LoginApi } from '../../api/authApi';
+import { InputField } from '@/components/ui/InputField';
+import { Button } from '@/components/ui/Button';
+import type { LoginFormData } from '../../types/authTypes';
+import { loginSchema } from '../../utils/authSchema';
 
-const loginSchema = z.object({
-  identifier: z.string().min(1, "Username or Email is required"),
-  password: z.string().min(6, "Password must be at least 6 characters"), 
-});
-
-export type LoginFormData = z.infer<typeof loginSchema>;
 
 interface LoginModalProps {
   onLoginSuccess?: () => void;
@@ -37,17 +32,25 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onLoginSuccess }) => {
     }
   });
 
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setValidationErrors({}); 
     const result = loginSchema.safeParse(formData);
 
     if (!result.success) {
-      const fieldErrors: any = {};
-      result.error.issues.forEach((issue) => {
-        fieldErrors[issue.path[0]] = issue.message;
+      const flattenedErrors = result.error.flatten().fieldErrors;
+      
+      const errors: Partial<Record<keyof LoginFormData, string>> = {};
+      
+      (Object.keys(flattenedErrors) as Array<keyof LoginFormData>).forEach((key) => {
+        const fieldError = flattenedErrors[key];
+        if (fieldError && fieldError.length > 0) {
+          errors[key] = fieldError[0]; 
+        }
       });
-      setValidationErrors(fieldErrors);
+
+      setValidationErrors(errors);
       return;
     }
 
@@ -112,7 +115,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onLoginSuccess }) => {
             <div className="flex justify-end">
               <button 
                 type="button" 
-                className="bg-transparent p-0 h-auto text-[10px] font-bold text-[#007473] hover:underline hover:bg-transparent uppercase tracking-tighter shadow-none"
+                className="bg-transparent p-0 h-auto text-[10px] font-bold text-primary hover:underline hover:bg-transparent uppercase tracking-tighter shadow-none"
               >
                 Forgot Password?
               </button>
@@ -141,7 +144,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onLoginSuccess }) => {
               </span>
               <button 
                 type="button" 
-                className="bg-transparent p-0 h-auto text-sm font-black text-[#007473] hover:underline hover:bg-transparent shadow-none"
+                className="bg-transparent p-0 h-auto text-sm font-black text-primary hover:underline hover:bg-transparent shadow-none"
               >
                 Create Account
               </button>
