@@ -10,11 +10,13 @@
   --color-primary: #007473;
   --color-secondary: #173E35;
   --color-accent: #FFB71B;
+  --color-primary-accent: #0074731A;
 
   --background-image-hero-gradient: linear-gradient(to bottom, #007473 14%, #ffffff 100%);
   --background-image-primary-gradient: linear-gradient(to right, #173E35 18%, #007473 100%);
   --background-image-main-gradient: linear-gradient(to top, #80b9b9 0%, #FFFFFF 100%);
   --background-image-primary-gradient-vertical: linear-gradient(to bottom, #173E35 18%, #007473 100%);
+  
 }
 html {
   scroll-behavior: smooth;

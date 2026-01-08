@@ -14,9 +14,9 @@ import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authentic
 import { Route as AuthenticatedDashboardLayoutRouteImport } from './routes/_authenticated/_dashboard-layout'
 import { Route as publicRegisterRouteImport } from './routes/(public)/register'
 import { Route as publicLoginRouteImport } from './routes/(public)/login'
-import { Route as AuthenticatedDashboardLayoutIndexRouteImport } from './routes/_authenticated/_dashboard-layout/index'
-import { Route as AuthenticatedDashboardLayoutMyProjectsRouteImport } from './routes/_authenticated/_dashboard-layout/MyProjects'
-import { Route as AuthenticatedDashboardLayoutInventoryRouteImport } from './routes/_authenticated/_dashboard-layout/Inventory'
+import { Route as AuthenticatedDashboardLayoutPortfolioRouteImport } from './routes/_authenticated/_dashboard-layout/portfolio'
+import { Route as AuthenticatedDashboardLayoutMyProjectsRouteImport } from './routes/_authenticated/_dashboard-layout/my-projects'
+import { Route as AuthenticatedDashboardLayoutExploreRouteImport } from './routes/_authenticated/_dashboard-layout/explore'
 
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
@@ -42,22 +42,22 @@ const publicLoginRoute = publicLoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedDashboardLayoutIndexRoute =
-  AuthenticatedDashboardLayoutIndexRouteImport.update({
-    id: '/',
-    path: '/',
+const AuthenticatedDashboardLayoutPortfolioRoute =
+  AuthenticatedDashboardLayoutPortfolioRouteImport.update({
+    id: '/portfolio',
+    path: '/portfolio',
     getParentRoute: () => AuthenticatedDashboardLayoutRoute,
   } as any)
 const AuthenticatedDashboardLayoutMyProjectsRoute =
   AuthenticatedDashboardLayoutMyProjectsRouteImport.update({
-    id: '/MyProjects',
-    path: '/MyProjects',
+    id: '/my-projects',
+    path: '/my-projects',
     getParentRoute: () => AuthenticatedDashboardLayoutRoute,
   } as any)
-const AuthenticatedDashboardLayoutInventoryRoute =
-  AuthenticatedDashboardLayoutInventoryRouteImport.update({
-    id: '/Inventory',
-    path: '/Inventory',
+const AuthenticatedDashboardLayoutExploreRoute =
+  AuthenticatedDashboardLayoutExploreRouteImport.update({
+    id: '/explore',
+    path: '/explore',
     getParentRoute: () => AuthenticatedDashboardLayoutRoute,
   } as any)
 
@@ -65,17 +65,17 @@ export interface FileRoutesByFullPath {
   '/login': typeof publicLoginRoute
   '/register': typeof publicRegisterRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
-  '/Inventory': typeof AuthenticatedDashboardLayoutInventoryRoute
-  '/MyProjects': typeof AuthenticatedDashboardLayoutMyProjectsRoute
-  '/': typeof AuthenticatedDashboardLayoutIndexRoute
+  '/explore': typeof AuthenticatedDashboardLayoutExploreRoute
+  '/my-projects': typeof AuthenticatedDashboardLayoutMyProjectsRoute
+  '/portfolio': typeof AuthenticatedDashboardLayoutPortfolioRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof publicLoginRoute
   '/register': typeof publicRegisterRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
-  '/Inventory': typeof AuthenticatedDashboardLayoutInventoryRoute
-  '/MyProjects': typeof AuthenticatedDashboardLayoutMyProjectsRoute
-  '/': typeof AuthenticatedDashboardLayoutIndexRoute
+  '/explore': typeof AuthenticatedDashboardLayoutExploreRoute
+  '/my-projects': typeof AuthenticatedDashboardLayoutMyProjectsRoute
+  '/portfolio': typeof AuthenticatedDashboardLayoutPortfolioRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -84,9 +84,9 @@ export interface FileRoutesById {
   '/(public)/register': typeof publicRegisterRoute
   '/_authenticated/_dashboard-layout': typeof AuthenticatedDashboardLayoutRouteWithChildren
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
-  '/_authenticated/_dashboard-layout/Inventory': typeof AuthenticatedDashboardLayoutInventoryRoute
-  '/_authenticated/_dashboard-layout/MyProjects': typeof AuthenticatedDashboardLayoutMyProjectsRoute
-  '/_authenticated/_dashboard-layout/': typeof AuthenticatedDashboardLayoutIndexRoute
+  '/_authenticated/_dashboard-layout/explore': typeof AuthenticatedDashboardLayoutExploreRoute
+  '/_authenticated/_dashboard-layout/my-projects': typeof AuthenticatedDashboardLayoutMyProjectsRoute
+  '/_authenticated/_dashboard-layout/portfolio': typeof AuthenticatedDashboardLayoutPortfolioRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -94,17 +94,17 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/onboarding'
-    | '/Inventory'
-    | '/MyProjects'
-    | '/'
+    | '/explore'
+    | '/my-projects'
+    | '/portfolio'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
     | '/register'
     | '/onboarding'
-    | '/Inventory'
-    | '/MyProjects'
-    | '/'
+    | '/explore'
+    | '/my-projects'
+    | '/portfolio'
   id:
     | '__root__'
     | '/_authenticated'
@@ -112,9 +112,9 @@ export interface FileRouteTypes {
     | '/(public)/register'
     | '/_authenticated/_dashboard-layout'
     | '/_authenticated/onboarding'
-    | '/_authenticated/_dashboard-layout/Inventory'
-    | '/_authenticated/_dashboard-layout/MyProjects'
-    | '/_authenticated/_dashboard-layout/'
+    | '/_authenticated/_dashboard-layout/explore'
+    | '/_authenticated/_dashboard-layout/my-projects'
+    | '/_authenticated/_dashboard-layout/portfolio'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -160,44 +160,44 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof publicLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/_dashboard-layout/': {
-      id: '/_authenticated/_dashboard-layout/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedDashboardLayoutIndexRouteImport
+    '/_authenticated/_dashboard-layout/portfolio': {
+      id: '/_authenticated/_dashboard-layout/portfolio'
+      path: '/portfolio'
+      fullPath: '/portfolio'
+      preLoaderRoute: typeof AuthenticatedDashboardLayoutPortfolioRouteImport
       parentRoute: typeof AuthenticatedDashboardLayoutRoute
     }
-    '/_authenticated/_dashboard-layout/MyProjects': {
-      id: '/_authenticated/_dashboard-layout/MyProjects'
-      path: '/MyProjects'
-      fullPath: '/MyProjects'
+    '/_authenticated/_dashboard-layout/my-projects': {
+      id: '/_authenticated/_dashboard-layout/my-projects'
+      path: '/my-projects'
+      fullPath: '/my-projects'
       preLoaderRoute: typeof AuthenticatedDashboardLayoutMyProjectsRouteImport
       parentRoute: typeof AuthenticatedDashboardLayoutRoute
     }
-    '/_authenticated/_dashboard-layout/Inventory': {
-      id: '/_authenticated/_dashboard-layout/Inventory'
-      path: '/Inventory'
-      fullPath: '/Inventory'
-      preLoaderRoute: typeof AuthenticatedDashboardLayoutInventoryRouteImport
+    '/_authenticated/_dashboard-layout/explore': {
+      id: '/_authenticated/_dashboard-layout/explore'
+      path: '/explore'
+      fullPath: '/explore'
+      preLoaderRoute: typeof AuthenticatedDashboardLayoutExploreRouteImport
       parentRoute: typeof AuthenticatedDashboardLayoutRoute
     }
   }
 }
 
 interface AuthenticatedDashboardLayoutRouteChildren {
-  AuthenticatedDashboardLayoutInventoryRoute: typeof AuthenticatedDashboardLayoutInventoryRoute
+  AuthenticatedDashboardLayoutExploreRoute: typeof AuthenticatedDashboardLayoutExploreRoute
   AuthenticatedDashboardLayoutMyProjectsRoute: typeof AuthenticatedDashboardLayoutMyProjectsRoute
-  AuthenticatedDashboardLayoutIndexRoute: typeof AuthenticatedDashboardLayoutIndexRoute
+  AuthenticatedDashboardLayoutPortfolioRoute: typeof AuthenticatedDashboardLayoutPortfolioRoute
 }
 
 const AuthenticatedDashboardLayoutRouteChildren: AuthenticatedDashboardLayoutRouteChildren =
   {
-    AuthenticatedDashboardLayoutInventoryRoute:
-      AuthenticatedDashboardLayoutInventoryRoute,
+    AuthenticatedDashboardLayoutExploreRoute:
+      AuthenticatedDashboardLayoutExploreRoute,
     AuthenticatedDashboardLayoutMyProjectsRoute:
       AuthenticatedDashboardLayoutMyProjectsRoute,
-    AuthenticatedDashboardLayoutIndexRoute:
-      AuthenticatedDashboardLayoutIndexRoute,
+    AuthenticatedDashboardLayoutPortfolioRoute:
+      AuthenticatedDashboardLayoutPortfolioRoute,
   }
 
 const AuthenticatedDashboardLayoutRouteWithChildren =
