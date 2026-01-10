@@ -1,1 +1,1 @@
-export const devPassword = import.meta.env.TROO_PASSWORD
+export const devPassword = import.meta.env.VITE_DEV_PASSWORD

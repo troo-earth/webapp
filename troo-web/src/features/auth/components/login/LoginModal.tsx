@@ -19,7 +19,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onLoginSuccess }) => {
   const navigate = useNavigate()
 
   const [formData, setFormData] = useState<LoginFormData>({
-    identifier: '',
+    email: '',
     password: '',
   });
 
@@ -92,12 +92,12 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onLoginSuccess }) => {
               label="Username or Email" 
               placeholder="john@company.com" 
               type="text"
-              value={formData.identifier}
-              onChange={(e) => setFormData({...formData, identifier: e.target.value})}
-              className={validationErrors.identifier ? "border-red-500 focus:border-red-500" : ""}
+              value={formData.email}
+              onChange={(e) => setFormData({...formData, email: e.target.value})}
+              className={validationErrors.email ? "border-red-500 focus:border-red-500" : ""}
             />
-            {validationErrors.identifier && (
-              <p className="text-[10px] text-red-500 font-bold ml-1">{validationErrors.identifier}</p>
+            {validationErrors.email && (
+              <p className="text-[10px] text-red-500 font-bold ml-1">{validationErrors.email}</p>
             )}
           </div>
 

@@ -3,6 +3,7 @@ import { createRootRouteWithContext, Outlet } from '@tanstack/react-router';
 // import { TanStackRouterDevtools } from '@tanstack/router-devtools';
 import { Suspense } from 'react';
 import type { useAuth } from '../hooks/auth/useAuth';
+import LoadingScreen from '@/components/global/Loading';
 
 interface MyRouterContext {
   queryClient: QueryClient
@@ -15,7 +16,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 function RootComponent() {
   return (
     <>
-      <Suspense fallback={<div>Loading global layout...</div>}>
+      <Suspense fallback={<LoadingScreen/>}>
         <Outlet />
       </Suspense>
 
