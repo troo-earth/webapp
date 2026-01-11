@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowRight, AlertCircle } from 'lucide-react';
 import { InputField } from '../../../../components/ui/InputField';
 import { Button } from '../../../../components/ui/Button';
 import BgGradient from '@/components/ui/BgGradient';
 import type { RegisterFormData } from '../../types/authTypes';
-import { RegisterApi } from '../../api/authApi';
+import { registerApi } from '../../api/authApi';
 import { registerSchema } from '../../utils/authSchema';
 import { useNavigate } from '@tanstack/react-router';
 
-export const RegisterModal: React.FC<{ onRegisterSuccess?: () => void }> = ({ onRegisterSuccess }) => {
+export const RegisterModal: React.FC<{ onRegisterSuccess?: () => void }> = () => {
 
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const [formData, setFormData] = useState<RegisterFormData>({
     firstName: '',
@@ -24,10 +25,10 @@ export const RegisterModal: React.FC<{ onRegisterSuccess?: () => void }> = ({ on
   const [validationErrors, setValidationErrors] = useState<Partial<Record<keyof RegisterFormData, string>>>({});
 
   const mutation = useMutation({
-    mutationFn: RegisterApi,
+    mutationFn: registerApi,
     onSuccess: (data) => {
-      console.log("Registration Successful:", data);
-      if (onRegisterSuccess) onRegisterSuccess();
+      queryClient.setQueryData(['auth-me'], data);
+      navigate({ to: '/onboarding', replace: true });
     },
     onError: (error) => {
       console.error("Registration Failed:", error);

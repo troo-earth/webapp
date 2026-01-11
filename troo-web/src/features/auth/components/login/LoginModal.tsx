@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { useMutation } from '@tanstack/react-query'; 
+import { useMutation, useQueryClient } from '@tanstack/react-query'; 
 import { ArrowRight, AlertCircle } from 'lucide-react';
 import BgGradient from '@/components/ui/BgGradient';
-import { LoginApi } from '../../api/authApi';
+import { loginApi } from '../../api/authApi';
 import { InputField } from '@/components/ui/InputField';
 import { Button } from '@/components/ui/Button';
 import type { LoginFormData } from '../../types/authTypes';
@@ -14,9 +14,11 @@ interface LoginModalProps {
   onLoginSuccess?: () => void;
 }
 
-export const LoginModal: React.FC<LoginModalProps> = ({ onLoginSuccess }) => {
+export const LoginModal: React.FC<LoginModalProps> = () => {
 
   const navigate = useNavigate()
+  const queryClient = useQueryClient();
+  // const router = useRouter();
 
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
@@ -26,10 +28,10 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onLoginSuccess }) => {
   const [validationErrors, setValidationErrors] = useState<Partial<Record<keyof LoginFormData, string>>>({});
 
   const mutation = useMutation({
-    mutationFn: LoginApi,
-    onSuccess: (data) => {
-      console.log("Login Successful:", data);
-      if (onLoginSuccess) onLoginSuccess();
+    mutationFn: loginApi,
+    onSuccess: async (data) => {
+      queryClient.setQueryData(['auth-me'], data);
+      navigate({to: '/explore', replace: true});
     },
     onError: (error) => {
       console.error("Login Failed:", error);

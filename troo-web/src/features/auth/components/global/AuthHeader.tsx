@@ -1,24 +1,16 @@
 import React, { useState } from 'react';
 import { ChevronDown, LogOut, User as UserIcon } from "lucide-react";
 import { Logo } from "../../../../components/global/Logo";
-import { useAuth } from '../../../../hooks/auth/useAuth';
-import { useRouteContext } from '@tanstack/react-router';
+import { useAuth } from '../../hooks/useAuth';
 
-interface User {
-  id: string | number;
-  name: string;
-  email?: string;
-}
 
 const AuthHeader: React.FC = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
-  const { logout } = useAuth()
+  const { logout, user, isAuthenticated } = useAuth()
 
-  const { auth } = useRouteContext({from:"__root__"});
 
-  const isAuthenticated: boolean = auth?.isAuthenticated
-  const user = auth?.user as User | null;
+  const displayUser = isAuthenticated && location.pathname.includes('/onboarding')
 
   const handleLogout = () => {
     logout();
@@ -30,7 +22,7 @@ const AuthHeader: React.FC = () => {
         
         <Logo />
 
-        {isAuthenticated && (
+        {displayUser && (
           <div className="relative">
             <button 
               onClick={() => setIsOpen(!isOpen)}
@@ -41,7 +33,7 @@ const AuthHeader: React.FC = () => {
               </div>
               
               <span className="text-sm font-bold tracking-tight">
-                {user?.name || "User"}
+                {user?.fullname || "User"}
               </span>
               
               <ChevronDown 
