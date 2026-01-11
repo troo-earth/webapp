@@ -21,8 +21,10 @@
     "react-dom": "^19.2.0",
     "react-hot-toast": "^2.6.0",
     "react-redux": "^9.2.0",
+    "react-select": "^5.10.2",
     "react-spinners": "^0.17.0",
     "tailwindcss": "^4.1.18",
+    "world-countries": "^5.1.0",
     "zod": "^4.2.1"
   },
   "devDependencies": {

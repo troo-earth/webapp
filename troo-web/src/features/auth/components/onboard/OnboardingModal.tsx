@@ -3,29 +3,89 @@ import { ArrowRight, UploadCloud, ImagePlus, Building2, FileCheck, X} from 'luci
 import BgGradient from '@/components/ui/BgGradient';
 import { Button } from '@/components/ui/Button';
 import { InputField } from '@/components/ui/InputField';
+import { useMutation } from '@tanstack/react-query';
+import { useNavigate } from '@tanstack/react-router';
+import { onboardingApi, uploadLogoApi, uploadProofApi } from '../../api/authApi';
+import type { OnboardingPayload } from '../../types/authTypes';
+import { onboardingSchema } from '../../utils/authSchema';
+import { COUNTRY_OPTIONS } from '@/lib/constants';
+import { SelectField } from '@/components/ui/SelectField';
 
 interface OnboardingModalProps {
   onSuccess: () => void;
 }
 
-export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onSuccess }) => {
+export const OnboardingModal: React.FC<OnboardingModalProps> = () => {
+
+  const navigate = useNavigate();
+  // const queryClient = useQueryClient();
+
   const [formData, setFormData] = useState({
     companyName: '',
-    country: '',
+    countryCode: '',
     registrationId: '',
-  });
+  }); 
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [proofFile, setProofFile] = useState<File | null>(null);
-  const [isLoading, setIsLoading] = useState(false); // Loading state
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const { mutate, isPending } = useMutation({
+    mutationFn: async () => {
+      if (!logoFile || !proofFile) throw new Error("Files are missing");
+
+
+      const [logoUrl, proofUrl] = await Promise.all([
+        uploadLogoApi(logoFile),
+        uploadProofApi(proofFile)
+      ]);
+
+      const finalPayload: OnboardingPayload = {
+        org_name: formData.companyName,
+        country_code: formData.countryCode,
+        registration_id: formData.registrationId,
+        logo_url: logoUrl,
+        incorporation_doc_url: proofUrl
+      };
+
+      return await onboardingApi(finalPayload);
+    },
+    onSuccess: () => {
+      navigate({ to: '/explore' });
+    },
+    onError: (error) => {
+      console.error("Onboarding error:", error);
+     
+    }
+  });
+
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setErrors({});
 
-    setTimeout(() => {
-        setIsLoading(false);
-        onSuccess();
-    }, 1500);
+    const result = onboardingSchema.safeParse({
+      ...formData,
+      logo: logoFile,
+      proof: proofFile
+    });
+
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {};
+      result.error.issues.forEach((issue) => {
+        fieldErrors[String(issue.path[0])] = issue.message;
+      });
+      setErrors(fieldErrors);
+      return;
+    }
+
+    const data = new FormData();
+    data.append('companyName', result.data.companyName);
+    data.append('countryCode', result.data.countryCode);
+    data.append('registrationId', result.data.registrationId);
+    data.append('logo', result.data.logo);
+    data.append('proof', result.data.proof);
+
+    mutate();
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'logo' | 'proof') => {
@@ -80,7 +140,14 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onSuccess }) =
             <InputField label="Legal Entity Name" placeholder="Acme Corp Pte. Ltd." type="text" value={formData.companyName} onChange={(e) => setFormData({...formData, companyName: e.target.value})} />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <InputField label="Country" placeholder="Singapore" type="text" value={formData.country} onChange={(e) => setFormData({...formData, country: e.target.value})} />
+                <SelectField 
+                  label="Country"
+                  placeholder="Searching..."
+                  value={formData.countryCode}
+                  options={COUNTRY_OPTIONS}
+                  onChange={(val) => setFormData({ ...formData, countryCode: val })}
+                  error={errors.country}
+              />
                 <InputField label="Registration / Tax ID" placeholder="UEN 202412345X" type="text" value={formData.registrationId} onChange={(e) => setFormData({...formData, registrationId: e.target.value})} />
             </div>
 
@@ -107,8 +174,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onSuccess }) =
                 <Button 
                     type="button" 
                     variant="ghost"
-                    disabled={isLoading}
-                    onClick={() => console.log("Skip clicked")} 
+                    disabled={isPending}
+                    onClick={() => navigate({ to: '/explore' })} 
                 >
                     Skip for now
                 </Button>
@@ -116,7 +183,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onSuccess }) =
                 <Button 
                     type="submit" 
                     variant="primary" 
-                    isLoading={isLoading}
+                    isLoading={isPending}
                     className="text-xs uppercase tracking-widest"
                 >
                     Verify & Continue

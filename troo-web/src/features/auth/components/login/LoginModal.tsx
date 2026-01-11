@@ -30,6 +30,7 @@ export const LoginModal: React.FC<LoginModalProps> = () => {
   const mutation = useMutation({
     mutationFn: loginApi,
     onSuccess: async (data) => {
+      console.log(data);
       queryClient.setQueryData(['auth-me'], data);
       navigate({to: '/explore', replace: true});
     },

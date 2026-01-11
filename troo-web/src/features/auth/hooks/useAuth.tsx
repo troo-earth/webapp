@@ -12,9 +12,9 @@ export const useAuth = () => {
   const logout = useMutation({
     mutationFn: logoutApi,
     onSuccess: async () => {
+      navigate({ to: '/login', replace: true });
       queryClient.setQueryData(authQueryOptions.queryKey, null);
       queryClient.invalidateQueries({ queryKey: authQueryOptions.queryKey }); 
-      navigate({ to: '/login', replace: true });
     },
   });
 

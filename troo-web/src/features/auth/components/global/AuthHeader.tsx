@@ -46,9 +46,9 @@ const AuthHeader: React.FC = () => {
               <div className="absolute top-full right-0 mt-1 w-full bg-white border border-gray-100 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 z-50">
                 <button 
                   onClick={handleLogout}
-                  className="w-full flex items-center justify-center gap-2 px-3 py-2 text-[10px] font-bold text-red-500 hover:bg-red-50 transition-colors"
+                  className="w-full flex items-center justify-center gap-2 px-3 py-3 text-[14px] font-bold text-red-500 hover:bg-red-50 transition-colors"
                 >
-                  <LogOut size={12} />
+                  <LogOut size={14} />
                   Log Out
                 </button>
               </div>

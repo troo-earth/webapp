@@ -1,13 +1,13 @@
 import { api } from "@/lib/axiosConfig";
-import type { AuthResponse, LoginFormData, RegisterFormData } from "../types/authTypes";
+import type { AuthResponse, LoginFormData, OnboardingPayload, OrgResponse, RegisterFormData } from "../types/authTypes";
 import { handleError } from "@/utils/utils";
 import type { User } from "@/types/global/types";
-import { extractAuthObject } from "../utils/extractAuthObject";
+import { extractLoginAuthObject, extractRegisterAuthObject } from "../utils/extractAuthObject";
 
 export const loginApi = async (data: LoginFormData): Promise<User> => {
   try {
     const response = await api.post<AuthResponse>('/auth/login', data);
-    return extractAuthObject(response);
+    return extractLoginAuthObject(response);
   } catch (error: unknown) { 
     throw new Error(handleError(error, "Failed to login."));
   }
@@ -32,7 +32,7 @@ export const registerApi = async (data: RegisterFormData): Promise<User> => {
     };
     
     const response = await api.post<AuthResponse>('/users/create-user', apiPayload);
-    return extractAuthObject(response);
+    return extractRegisterAuthObject(response);
   } catch (error: unknown) { 
     throw new Error(handleError(error, "Failed to register."))
   }
@@ -42,7 +42,7 @@ export const getMeApi = async (): Promise<User | null> => {
   try {
     const response = await api.get('/auth/me');
 
-    return extractAuthObject(response);
+    return extractLoginAuthObject(response);
   } catch (error) {
     const status = error?.status;
 
@@ -57,6 +57,49 @@ export const logoutApi = async (): Promise<void | null> => {
   try {
     await api.delete('/auth/logout');
   } catch (error) {
-    console.error("Server logout failed", error);
+    throw new Error(handleError(error, "Failed to logout"));
+  }
+};
+
+import axios from 'axios';
+
+const handleSignedUpload = async (file: File, endpoint: string): Promise<string> => {
+  try {
+    const response = await api.post<{ 
+      data: { uploadUrl: string; publicUrl: string; path: string } 
+    }>(endpoint, { 
+      file_name: file.name 
+    });
+
+    const { uploadUrl, publicUrl } = response.data.data;
+
+    await axios.put(uploadUrl, file, {
+      headers: {
+        'Content-Type': file.type,
+      },
+    });
+
+    return publicUrl;
+  } catch (error: unknown) {
+    throw new Error(handleError(error, "Upload failed."));
+  }
+};
+
+
+export const uploadLogoApi = async (file: File): Promise<string> => {
+  return handleSignedUpload(file, '/uploads/org-logo');
+};
+
+export const uploadProofApi = async (file: File): Promise<string> => {
+  return handleSignedUpload(file, '/uploads/org-doc');
+};
+
+
+export const onboardingApi = async (payload: OnboardingPayload): Promise<OrgResponse> => {
+  try {
+    const response = await api.post<OrgResponse>('/orgs/create-org', payload);
+    return response.data;
+  } catch (error: unknown) {
+    throw new Error(handleError(error, "Onboarding process failed."));
   }
 };
