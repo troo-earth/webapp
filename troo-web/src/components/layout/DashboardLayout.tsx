@@ -1,7 +1,7 @@
 import { Outlet, useLocation } from '@tanstack/react-router'
 import { Sidebar } from '../global/Sidebar'
 import { motion, AnimatePresence } from 'framer-motion'
-import BgGradient from '../ui/BgGradient'
+import BgGradient from '../ui/global/BgGradient'
 import { Header } from '../global/Header'
 
 const DashboardLayout = () => {
@@ -17,7 +17,7 @@ const DashboardLayout = () => {
             layout
             className="h-full w-full bg-white/80 backdrop-blur-md rounded-3xl shadow-xl shadow-teal-900/5 border border-white flex flex-col overflow-hidden"
           >
-            <div className="flex-1 overflow-y-auto p-8 custom-scrollbar" >
+            <div className="flex-1 overflow-y-auto p-2 custom-scrollbar" >
               <BgGradient/>
               <AnimatePresence mode="wait">
                 <motion.div

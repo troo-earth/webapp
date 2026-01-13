@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import BgGradient from '@/components/ui/BgGradient';
-import SuccessOverlay from './SuccessOverlay';
-import { OnboardingModal } from './OnboardingModal';
-import AuthHeader from '../global/AuthHeader';
-import AuthFooter from '../global/AuthFooter';
+import BgGradient from '@/components/ui/global/BgGradient';
+import SuccessOverlay from '@/features/auth/components/onboard/SuccessOverlay';
+import AuthHeader from '@/features/auth/components/shared/AuthHeader';
+import { OnboardingModal } from '@/features/auth/components/onboard/OnboardingModal';
+import AuthFooter from '@/features/auth/components/shared/AuthFooter';
 
 export const OnboardingPage: React.FC = () => {
   const [isSuccess, setIsSuccess] = useState<boolean>(false);

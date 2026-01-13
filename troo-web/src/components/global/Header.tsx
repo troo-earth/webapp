@@ -2,11 +2,12 @@ import React from 'react';
 import { useLocation } from '@tanstack/react-router';
 import { useSelector } from 'react-redux';
 import type { RootState } from '@/redux/store';
+import { useAuth } from '@/features/auth/hooks/useAuth';
 
 const Header: React.FC = () => {
   const location = useLocation();
   
-  const user = useSelector((state: RootState) => state.auth.user);
+  const { user } = useAuth()
 
   const getTitle = () => {
     const path = location.pathname.split('/').pop() || 'Dashboard';
@@ -32,10 +33,10 @@ const Header: React.FC = () => {
 
       <div className="flex items-center gap-4">
         <div 
-          title={user?.name}
+          title={user?.fullname}
           className="h-10 w-10 rounded-full bg-primary-accent border border-primary/20 flex items-center justify-center text-primary font-bold text-sm shadow-sm transition-transform hover:scale-105 cursor-pointer"
         >
-          {getInitials(user?.name)}
+          {getInitials(user?.fullname)}
         </div>
       </div>
     </header>

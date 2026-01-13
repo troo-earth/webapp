@@ -1,5 +1,5 @@
 import { ClimbingBoxLoader } from 'react-spinners';
-import BgGradient from '../ui/BgGradient'; 
+import BgGradient from '../ui/global/BgGradient'; 
 import type React from 'react';
 
 const LoadingScreen: React.FC = () => {

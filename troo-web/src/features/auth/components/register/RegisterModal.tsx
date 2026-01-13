@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowRight, AlertCircle } from 'lucide-react';
-import { InputField } from '../../../../components/ui/InputField';
-import { Button } from '../../../../components/ui/Button';
-import BgGradient from '@/components/ui/BgGradient';
+import { InputField } from '../../../../components/ui/input/InputField';
+import { Button } from '../../../../components/ui/buttons/Button';
+import BgGradient from '@/components/ui/global/BgGradient';
 import type { RegisterFormData } from '../../types/authTypes';
 import { registerApi } from '../../api/authApi';
 import { registerSchema } from '../../utils/authSchema';
 import { useNavigate } from '@tanstack/react-router';
+import { authQueryOptions } from '../../query/authQuery';
 
 export const RegisterModal: React.FC<{ onRegisterSuccess?: () => void }> = () => {
 
@@ -27,7 +28,7 @@ export const RegisterModal: React.FC<{ onRegisterSuccess?: () => void }> = () =>
   const mutation = useMutation({
     mutationFn: registerApi,
     onSuccess: (data) => {
-      queryClient.setQueryData(['auth-me'], data);
+      queryClient.setQueryData(authQueryOptions.queryKey, data);
       navigate({ to: '/onboarding', replace: true });
     },
     onError: (error) => {

@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { ArrowRight, UploadCloud, ImagePlus, Building2, FileCheck, X} from 'lucide-react';
-import BgGradient from '@/components/ui/BgGradient';
-import { Button } from '@/components/ui/Button';
-import { InputField } from '@/components/ui/InputField';
+import BgGradient from '@/components/ui/global/BgGradient';
+import { Button } from '@/components/ui/buttons/Button';
+import { InputField } from '@/components/ui/input/InputField';
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { onboardingApi, uploadLogoApi, uploadProofApi } from '../../api/authApi';
 import type { OnboardingPayload } from '../../types/authTypes';
 import { onboardingSchema } from '../../utils/authSchema';
 import { COUNTRY_OPTIONS } from '@/lib/constants';
-import { SelectField } from '@/components/ui/SelectField';
+import { SelectField } from '@/components/ui/input/SelectField';
 
 interface OnboardingModalProps {
   onSuccess: () => void;

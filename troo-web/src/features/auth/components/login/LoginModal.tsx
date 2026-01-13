@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query'; 
 import { ArrowRight, AlertCircle } from 'lucide-react';
-import BgGradient from '@/components/ui/BgGradient';
+import BgGradient from '@/components/ui/global/BgGradient';
 import { loginApi } from '../../api/authApi';
-import { InputField } from '@/components/ui/InputField';
-import { Button } from '@/components/ui/Button';
+import { InputField } from '@/components/ui/input/InputField';
+import { Button } from '@/components/ui/buttons/Button';
 import type { LoginFormData } from '../../types/authTypes';
 import { loginSchema } from '../../utils/authSchema';
 import { useNavigate } from '@tanstack/react-router';
+import { authQueryOptions } from '../../query/authQuery';
 
 
 interface LoginModalProps {
@@ -30,8 +31,7 @@ export const LoginModal: React.FC<LoginModalProps> = () => {
   const mutation = useMutation({
     mutationFn: loginApi,
     onSuccess: async (data) => {
-      console.log(data);
-      queryClient.setQueryData(['auth-me'], data);
+      queryClient.setQueryData(authQueryOptions.queryKey, data);
       navigate({to: '/explore', replace: true});
     },
     onError: (error) => {

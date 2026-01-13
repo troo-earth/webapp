@@ -18,6 +18,7 @@ import { Route as publicLoginRouteImport } from './routes/(public)/login'
 import { Route as AuthenticatedDashboardLayoutPortfolioRouteImport } from './routes/_authenticated/_dashboard-layout/portfolio'
 import { Route as AuthenticatedDashboardLayoutMyProjectsRouteImport } from './routes/_authenticated/_dashboard-layout/my-projects'
 import { Route as AuthenticatedDashboardLayoutExploreRouteImport } from './routes/_authenticated/_dashboard-layout/explore'
+import { Route as AuthenticatedDashboardLayoutProjectProjectIdRouteImport } from './routes/_authenticated/_dashboard-layout/project.$projectId'
 
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
@@ -66,6 +67,12 @@ const AuthenticatedDashboardLayoutExploreRoute =
     path: '/explore',
     getParentRoute: () => AuthenticatedDashboardLayoutRoute,
   } as any)
+const AuthenticatedDashboardLayoutProjectProjectIdRoute =
+  AuthenticatedDashboardLayoutProjectProjectIdRouteImport.update({
+    id: '/project/$projectId',
+    path: '/project/$projectId',
+    getParentRoute: () => AuthenticatedDashboardLayoutRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -75,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/explore': typeof AuthenticatedDashboardLayoutExploreRoute
   '/my-projects': typeof AuthenticatedDashboardLayoutMyProjectsRoute
   '/portfolio': typeof AuthenticatedDashboardLayoutPortfolioRoute
+  '/project/$projectId': typeof AuthenticatedDashboardLayoutProjectProjectIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -84,6 +92,7 @@ export interface FileRoutesByTo {
   '/explore': typeof AuthenticatedDashboardLayoutExploreRoute
   '/my-projects': typeof AuthenticatedDashboardLayoutMyProjectsRoute
   '/portfolio': typeof AuthenticatedDashboardLayoutPortfolioRoute
+  '/project/$projectId': typeof AuthenticatedDashboardLayoutProjectProjectIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -96,6 +105,7 @@ export interface FileRoutesById {
   '/_authenticated/_dashboard-layout/explore': typeof AuthenticatedDashboardLayoutExploreRoute
   '/_authenticated/_dashboard-layout/my-projects': typeof AuthenticatedDashboardLayoutMyProjectsRoute
   '/_authenticated/_dashboard-layout/portfolio': typeof AuthenticatedDashboardLayoutPortfolioRoute
+  '/_authenticated/_dashboard-layout/project/$projectId': typeof AuthenticatedDashboardLayoutProjectProjectIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -107,6 +117,7 @@ export interface FileRouteTypes {
     | '/explore'
     | '/my-projects'
     | '/portfolio'
+    | '/project/$projectId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -116,6 +127,7 @@ export interface FileRouteTypes {
     | '/explore'
     | '/my-projects'
     | '/portfolio'
+    | '/project/$projectId'
   id:
     | '__root__'
     | '/'
@@ -127,6 +139,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_dashboard-layout/explore'
     | '/_authenticated/_dashboard-layout/my-projects'
     | '/_authenticated/_dashboard-layout/portfolio'
+    | '/_authenticated/_dashboard-layout/project/$projectId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -201,6 +214,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardLayoutExploreRouteImport
       parentRoute: typeof AuthenticatedDashboardLayoutRoute
     }
+    '/_authenticated/_dashboard-layout/project/$projectId': {
+      id: '/_authenticated/_dashboard-layout/project/$projectId'
+      path: '/project/$projectId'
+      fullPath: '/project/$projectId'
+      preLoaderRoute: typeof AuthenticatedDashboardLayoutProjectProjectIdRouteImport
+      parentRoute: typeof AuthenticatedDashboardLayoutRoute
+    }
   }
 }
 
@@ -208,6 +228,7 @@ interface AuthenticatedDashboardLayoutRouteChildren {
   AuthenticatedDashboardLayoutExploreRoute: typeof AuthenticatedDashboardLayoutExploreRoute
   AuthenticatedDashboardLayoutMyProjectsRoute: typeof AuthenticatedDashboardLayoutMyProjectsRoute
   AuthenticatedDashboardLayoutPortfolioRoute: typeof AuthenticatedDashboardLayoutPortfolioRoute
+  AuthenticatedDashboardLayoutProjectProjectIdRoute: typeof AuthenticatedDashboardLayoutProjectProjectIdRoute
 }
 
 const AuthenticatedDashboardLayoutRouteChildren: AuthenticatedDashboardLayoutRouteChildren =
@@ -218,6 +239,8 @@ const AuthenticatedDashboardLayoutRouteChildren: AuthenticatedDashboardLayoutRou
       AuthenticatedDashboardLayoutMyProjectsRoute,
     AuthenticatedDashboardLayoutPortfolioRoute:
       AuthenticatedDashboardLayoutPortfolioRoute,
+    AuthenticatedDashboardLayoutProjectProjectIdRoute:
+      AuthenticatedDashboardLayoutProjectProjectIdRoute,
   }
 
 const AuthenticatedDashboardLayoutRouteWithChildren =

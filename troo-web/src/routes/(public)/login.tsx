@@ -1,4 +1,4 @@
-import { LoginPage } from '@/features/auth/components/login/LoginPage'
+import { LoginPage } from '@/pages/auth/LoginPage'
 import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod'
 
