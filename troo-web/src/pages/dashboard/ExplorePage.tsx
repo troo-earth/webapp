@@ -21,6 +21,7 @@ export const ExplorePage = () => {
   const { data: projectsData, isLoading, isError } = useQuery({
     queryKey: ['projects'],
     queryFn: getAllProjectsApi,
+    staleTime: 30 * 60 * 1000,
   });
 
   const handleFilterClick = () => {

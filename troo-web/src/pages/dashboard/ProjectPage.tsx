@@ -21,6 +21,7 @@ export const ProjectPage = () => {
   const { data: project, isLoading, isError } = useQuery({
     queryKey: ['project', projectId],
     queryFn: () => getProjectByIdApi(projectId),
+    staleTime: 20 * 60 * 1000,
   });
 
   if (isLoading) return <LoadingScreen />;

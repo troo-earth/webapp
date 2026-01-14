@@ -1,11 +1,10 @@
-import { Outlet, useLocation } from '@tanstack/react-router'
+import { Outlet } from '@tanstack/react-router'
 import { Sidebar } from '../global/Sidebar'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import BgGradient from '../ui/global/BgGradient'
 import { Header } from '../global/Header'
 
 const DashboardLayout = () => {
-  const location = useLocation()
 
   return (
     <div className="flex h-screen w-full bg-(--background-image-main-gradient) overflow-hidden font-nunito">      
@@ -18,17 +17,7 @@ const DashboardLayout = () => {
           >
             <div className="flex-1 overflow-y-auto p-2 custom-scrollbar" >
               <BgGradient/>
-              {/* <AnimatePresence mode="wait" initial={false}>
-                <motion.div
-                  key={location.pathname}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
-                > */}
-                  <Outlet />
-                {/* </motion.div>
-              </AnimatePresence> */}
+              <Outlet />
             </div>
           </motion.div>
         </div>
