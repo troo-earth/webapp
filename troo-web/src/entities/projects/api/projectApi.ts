@@ -1,6 +1,6 @@
 import { api } from "@/lib/axiosConfig";
 import { handleError } from "@/utils/utils";
-import type { ListingsApiResponse, ProjectResponse } from "../../../features/explore/types/projectTypes";
+import type { ListingsApiResponse, ProjectDetail, ProjectDetailResponse, ProjectResponse } from "../types/projectTypes";
 
 
 export const getAllProjectsApi = async (): Promise<ProjectResponse[]> => {
@@ -24,3 +24,14 @@ export const getAllProjectsApi = async (): Promise<ProjectResponse[]> => {
     throw new Error(handleError(error, "Failed to fetch projects."));
   }
 };
+
+
+
+export const getProjectByIdApi = async (id:string): Promise<ProjectDetail> =>{
+  try{
+    const response = await api.get<ProjectDetailResponse>(`/marketplace/projects/${id}`);
+    return response.data.data;
+  } catch (error: unknown) {
+    throw new Error(handleError(error, "Failed to fetch project details."));
+  }
+}

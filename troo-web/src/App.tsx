@@ -11,6 +11,7 @@ const router = createRouter({
     },
     defaultPendingComponent: () => <LoadingScreen />,
     defaultPreload: 'viewport', 
+    scrollToTopSelectors: ['#main-scrollable-area'],
 });
 
 

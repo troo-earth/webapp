@@ -1,7 +1,5 @@
 import React from 'react';
 import { useLocation } from '@tanstack/react-router';
-import { useSelector } from 'react-redux';
-import type { RootState } from '@/redux/store';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 
 const Header: React.FC = () => {
@@ -10,6 +8,10 @@ const Header: React.FC = () => {
   const { user } = useAuth()
 
   const getTitle = () => {
+    const pathname = location.pathname;
+    if (pathname.includes('project')) {
+      return 'Project Details';
+    }
     const path = location.pathname.split('/').pop() || 'Dashboard';
     return path.replace(/-/g, ' ');
   };

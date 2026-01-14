@@ -6,8 +6,8 @@ import path from 'path'
 
 export default defineConfig({
   plugins: [tanstackRouter({
-      routesDirectory: "./src/routes", 
-      generatedRouteTree: "./src/routeTree.gen.ts"
+      routesDirectory: path.resolve(__dirname, './src/routes'), 
+      generatedRouteTree: path.resolve(__dirname, './src/routeTree.gen.ts'),
     }),tailwindcss(), react()],
   resolve: {
     alias: {

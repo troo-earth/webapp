@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getAllProjectsApi } from "../../entities/projects/api/projectApi";
 import LoadingScreen from "@/components/global/Loading";
 import { FACT_CARDS } from "../../features/explore/constants/data";
-import { useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { transformProject } from "@/entities/projects/utils/helpers";
 import type { Project } from "@/entities/projects/types/projectTypes";
 import type { DisplayItem, FactCardType } from "@/features/explore/types/exploreTypes";
@@ -16,7 +16,6 @@ import { FactCard } from "@/features/explore/components/FactCard";
 
 
 export const ExplorePage = () => {
-  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   
   const { data: projectsData, isLoading, isError } = useQuery({
@@ -136,14 +135,18 @@ export const ExplorePage = () => {
                 if (item.type === 'fact') {
                     const factCard = item as FactCardType;
                     return (
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-expect-error
                         <FactCard key={factCard.id} title={factCard.title} fact={factCard.fact} color={factCard.color} />
                     );
                 } else {
                     const project = item as Project;
                     return (
-                        <div key={project.id} className="h-full" onClick={() => navigate({ to: `/project/${project.projectid}` })}>
-                            <ProjectCard project={project} />
-                        </div>
+                        <Link to="/$source/project/$projectId" params={{ source: 'explore', projectId: project.projectid }} search={{price: project.price}}>
+                          <div key={project.id} className="h-full" >
+                              <ProjectCard project={project} />
+                          </div>
+                        </Link>
                     );
                 }
             })}
