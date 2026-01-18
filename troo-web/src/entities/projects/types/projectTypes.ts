@@ -90,3 +90,10 @@ export interface ProjectDetail {
   proponents: Array<{ id: string; fullName: string; logo: string; publicUrl: string }>;
   validators: Array<{ id: string; fullName: string; logo: string; publicUrl: string }>;
 }
+
+export interface PaymentIntentResponse {
+  success: boolean;
+  data: {
+    clientSecret: string;
+  };
+}

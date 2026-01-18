@@ -6,15 +6,15 @@ import {
 } from 'lucide-react';
 import { Link, useParams, useSearch } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
-import { getProjectByIdApi } from '../../entities/projects/api/projectApi'; 
+import { getProjectByIdApi } from '../../../entities/projects/api/projectApi'; 
 import LoadingScreen from '@/components/global/Loading';
 import { Button } from '@/components/ui/buttons/Button';
 import { fallBackUrl, getCountryName, getSDGColor } from '@/entities/projects/utils/helpers';
 import useScrollToTopOnNav from '@/hooks/useScrollToTopOnNav';
 
 export const ProjectPage = () => {
-  const { source, projectId } = useParams({ from: '/_authenticated/_dashboard-layout/$source/project/$projectId' });
-  const { price } = useSearch({ from: '/_authenticated/_dashboard-layout/$source/project/$projectId' })
+  const { source, projectId } = useParams({ from: '/_authenticated/_dashboard-layout/$source/project/$projectId_' });
+  const { price } = useSearch({ from: '/_authenticated/_dashboard-layout/$source/project/$projectId_' })
 
   useScrollToTopOnNav();
 
@@ -161,8 +161,8 @@ export const ProjectPage = () => {
                     )}
                 </div>
 
-                <Link to="/$source/project/$projectId/purchase" params={{ source: source, projectId: project.id }} search={{ price: price }}>
-                    <Button className="w-full bg-primary hover:bg-primary-dark text-white py-5 rounded-2xl font-black text-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary/20 flex items-center justify-center gap-3">
+                <Link to="/$source/project/$projectId/purchase" params={{ source: source, projectId: projectId }} search={{ price: price }}>
+                    <Button className="w-full bg-primary hover:bg-primary-dark cursor-pointer text-white py-5 rounded-2xl font-black text-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary/20 flex items-center justify-center gap-3">
                         Buy Carbon Credits <Zap className="w-5 h-5 fill-current" />
                     </Button>
                 </Link>

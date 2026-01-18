@@ -1,6 +1,6 @@
 import { api } from "@/lib/axiosConfig";
 import { handleError } from "@/utils/utils";
-import type { ListingsApiResponse, ProjectDetail, ProjectDetailResponse, ProjectResponse } from "../types/projectTypes";
+import type { ListingsApiResponse, PaymentIntentResponse, ProjectDetail, ProjectDetailResponse, ProjectResponse } from "../types/projectTypes";
 
 
 export const getAllProjectsApi = async (): Promise<ProjectResponse[]> => {
@@ -35,3 +35,16 @@ export const getProjectByIdApi = async (id:string): Promise<ProjectDetail> =>{
     throw new Error(handleError(error, "Failed to fetch project details."));
   }
 }
+
+
+export const createPaymentIntentApi = async (projectId: string, amount: number): Promise<string> => {
+  try {
+    const response = await api.post<PaymentIntentResponse>('/payments/create-intent', { 
+      projectId, 
+      amount 
+    });
+    return response.data.data.clientSecret;
+  } catch (error: unknown) {
+    throw new Error(handleError(error, "Failed to initialize payment."));
+  }
+};

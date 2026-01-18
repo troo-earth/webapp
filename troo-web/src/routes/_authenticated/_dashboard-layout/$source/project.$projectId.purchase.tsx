@@ -1,16 +1,18 @@
+import { PurchasePage } from '@/pages/dashboard/project/PurchasePage';
 import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute(
   '/_authenticated/_dashboard-layout/$source/project/$projectId/purchase',
 )({
-  component: RouteComponent,
+  beforeLoad: () => {
+    console.log("PURCHASE ROUTE REACHED");
+  },
+  component: PurchasePage,
+  validateSearch: (search: Record<string, unknown>) => {
+    return {
+      price: (search.price as number) || 0, 
+    }
+  },
 })
 
-function RouteComponent() {
-  return (
-    <div>
-      Hello
-      "/_authenticated/_dashboard-layout/$source/project/$projectId/purchase"!
-    </div>
-  )
-}
+

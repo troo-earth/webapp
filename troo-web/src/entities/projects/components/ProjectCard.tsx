@@ -1,12 +1,10 @@
 import React, { useMemo, useState } from 'react';
 import { MapPin, ArrowUpRight, Calendar, ShieldCheck } from 'lucide-react';
-import { getCountryName, getSDGColor } from '../utils/helpers';
+import { fallBackUrl, getCountryName, getSDGColor } from '../utils/helpers';
 import type { Project } from '../types/projectTypes';
 
-const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?q=80&w=2613&auto=format&fit=crop";
 
 export const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
-  const [imgSrc, setImgSrc] = useState(project.imageUrl || FALLBACK_IMAGE);
 
   const location = useMemo(() => {
     const countryName = getCountryName(project.country);
@@ -26,6 +24,8 @@ export const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
     };
   }, [project.price]);
 
+  const imgSrc = project.imageUrl && !project.imageUrl.includes('placehold') ? project.imageUrl : fallBackUrl;
+  
   return (
         <div
           className="group relative flex flex-col w-full bg-white rounded-3xl border border-gray-100 overflow-hidden hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] transition-all duration-300 cursor-pointer hover:-translate-y-1 h-full"
@@ -35,7 +35,6 @@ export const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
             <img
               src={imgSrc}
               alt={project.name}
-              onError={() => setImgSrc(FALLBACK_IMAGE)}
               className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out"
             />
         

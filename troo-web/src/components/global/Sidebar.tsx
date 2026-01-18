@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Compass, Briefcase, FolderKanban, ChevronLeft, ChevronRight, LogOut } from 'lucide-react';
+import { Compass, Briefcase, FolderKanban, ChevronLeft, ChevronRight, LogOut, Settings } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Logo } from './Logo';
@@ -7,13 +7,13 @@ import { useAuth } from '@/features/auth/hooks/useAuth';
 
 const Sidebar: React.FC = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const { logout } = useAuth(); // Destructure logout from the hook
+  const { logout } = useAuth(); 
 
   const navItems = [
     { label: 'Explore', icon: <Compass size={18} />, path: '/explore' },
     { label: 'Portfolio', icon: <Briefcase size={18} />, path: '/portfolio' },
-    { label: 'My Projects', icon: <FolderKanban size={18} />, path: '/my-projects' },
-    { label: 'Onboarding', icon: <FolderKanban size={18} />, path: '/onboarding' },
+    { label: 'My Holdings', icon: <FolderKanban size={18} />, path: '/my-holdings' },
+    { label: 'Settings', icon: <Settings size={18} />, path: '/settings' },
   ];
 
   return (
@@ -21,7 +21,6 @@ const Sidebar: React.FC = () => {
       animate={{ width: isCollapsed ? 64 : 232 }}
       className="relative h-full bg-white flex flex-col font-nunito "
     >
-      {/* Toggle Button */}
       <button
         onClick={() => setIsCollapsed(!isCollapsed)}
         className="absolute -right-3 top-12 z-50 flex h-7 w-7 items-center justify-center rounded-full border border-gray-200 bg-white shadow-md cursor-pointer hover:bg-gray-50"
@@ -29,12 +28,10 @@ const Sidebar: React.FC = () => {
         {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
       </button>
 
-      {/* Logo Area */}
       <div className="h-16 flex items-center justify-center px-6 pt-2 overflow-hidden">
          {!isCollapsed && <Logo size='small'/>}
       </div>
 
-      {/* Navigation Items */}
       <nav className="flex-1 px-3 py-3 space-y-2">
         {navItems.map((item) => (
           <Link

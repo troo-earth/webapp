@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.11.2",
+    "@stripe/react-stripe-js": "^5.4.1",
+    "@stripe/stripe-js": "^8.6.1",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-query": "^5.90.12",
     "@tanstack/react-router": "^1.143.2",
@@ -23,6 +25,7 @@
     "react-redux": "^9.2.0",
     "react-select": "^5.10.2",
     "react-spinners": "^0.17.0",
+    "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.18",
     "world-countries": "^5.1.0",
     "zod": "^4.2.1"

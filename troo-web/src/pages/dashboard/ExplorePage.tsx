@@ -145,7 +145,7 @@ export const ExplorePage = () => {
                     return (
                         <Link to="/$source/project/$projectId" params={{ source: 'explore', projectId: project.projectid }} search={{price: project.price}}>
                           <div key={project.id} className="h-full" >
-                              <ProjectCard project={project} />
+                              <ProjectCard key={project.id} project={project} />
                           </div>
                         </Link>
                     );

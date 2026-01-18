@@ -60,6 +60,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = () => {
 
 
   const handleSubmit = (e: React.FormEvent) => {
+    console.log("Submitting onboarding form");
     e.preventDefault();
     setErrors({});
 
@@ -68,13 +69,14 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = () => {
       logo: logoFile,
       proof: proofFile
     });
-
+   console.log("Validation result:", result);
     if (!result.success) {
       const fieldErrors: Record<string, string> = {};
       result.error.issues.forEach((issue) => {
         fieldErrors[String(issue.path[0])] = issue.message;
       });
       setErrors(fieldErrors);
+      console.log("Validation errors:", fieldErrors);
       return;
     }
 
@@ -84,11 +86,13 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = () => {
     data.append('registrationId', result.data.registrationId);
     data.append('logo', result.data.logo);
     data.append('proof', result.data.proof);
+    console.log("Submitting onboarding with data:", result.data);
 
     mutate();
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'logo' | 'proof') => {
+    console.log("File selected for", type);
     if (e.target.files && e.target.files[0]) {
       if (type === 'logo') setLogoFile(e.target.files[0]);
       else setProofFile(e.target.files[0]);

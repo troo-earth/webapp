@@ -17,10 +17,10 @@ import { Route as publicRegisterRouteImport } from './routes/(public)/register'
 import { Route as publicLoginRouteImport } from './routes/(public)/login'
 import { Route as AuthenticatedDashboardLayoutSettingsRouteImport } from './routes/_authenticated/_dashboard-layout/settings'
 import { Route as AuthenticatedDashboardLayoutPortfolioRouteImport } from './routes/_authenticated/_dashboard-layout/portfolio'
+import { Route as AuthenticatedDashboardLayoutMyHoldingsRouteImport } from './routes/_authenticated/_dashboard-layout/my-holdings'
 import { Route as AuthenticatedDashboardLayoutExploreRouteImport } from './routes/_authenticated/_dashboard-layout/explore'
-import { Route as AuthenticatedDashboardLayoutMyHoldingsIndexRouteImport } from './routes/_authenticated/_dashboard-layout/my-holdings/index'
-import { Route as AuthenticatedDashboardLayoutMyHoldingsRetirementsRouteImport } from './routes/_authenticated/_dashboard-layout/my-holdings/retirements'
-import { Route as AuthenticatedDashboardLayoutMyHoldingsRetireProjectIdRouteImport } from './routes/_authenticated/_dashboard-layout/my-holdings/retire.$projectId'
+import { Route as AuthenticatedDashboardLayoutMyHoldingsRetirementsRouteImport } from './routes/_authenticated/_dashboard-layout/my-holdings.retirements'
+import { Route as AuthenticatedDashboardLayoutMyHoldingsRetireProjectIdRouteImport } from './routes/_authenticated/_dashboard-layout/my-holdings.retire.$projectId'
 import { Route as AuthenticatedDashboardLayoutSourceProjectProjectIdRouteImport } from './routes/_authenticated/_dashboard-layout/$source/project.$projectId_'
 import { Route as AuthenticatedDashboardLayoutSourceProjectProjectIdPurchaseRouteImport } from './routes/_authenticated/_dashboard-layout/$source/project.$projectId.purchase'
 
@@ -65,29 +65,29 @@ const AuthenticatedDashboardLayoutPortfolioRoute =
     path: '/portfolio',
     getParentRoute: () => AuthenticatedDashboardLayoutRoute,
   } as any)
+const AuthenticatedDashboardLayoutMyHoldingsRoute =
+  AuthenticatedDashboardLayoutMyHoldingsRouteImport.update({
+    id: '/my-holdings',
+    path: '/my-holdings',
+    getParentRoute: () => AuthenticatedDashboardLayoutRoute,
+  } as any)
 const AuthenticatedDashboardLayoutExploreRoute =
   AuthenticatedDashboardLayoutExploreRouteImport.update({
     id: '/explore',
     path: '/explore',
     getParentRoute: () => AuthenticatedDashboardLayoutRoute,
   } as any)
-const AuthenticatedDashboardLayoutMyHoldingsIndexRoute =
-  AuthenticatedDashboardLayoutMyHoldingsIndexRouteImport.update({
-    id: '/my-holdings/',
-    path: '/my-holdings/',
-    getParentRoute: () => AuthenticatedDashboardLayoutRoute,
-  } as any)
 const AuthenticatedDashboardLayoutMyHoldingsRetirementsRoute =
   AuthenticatedDashboardLayoutMyHoldingsRetirementsRouteImport.update({
-    id: '/my-holdings/retirements',
-    path: '/my-holdings/retirements',
-    getParentRoute: () => AuthenticatedDashboardLayoutRoute,
+    id: '/retirements',
+    path: '/retirements',
+    getParentRoute: () => AuthenticatedDashboardLayoutMyHoldingsRoute,
   } as any)
 const AuthenticatedDashboardLayoutMyHoldingsRetireProjectIdRoute =
   AuthenticatedDashboardLayoutMyHoldingsRetireProjectIdRouteImport.update({
-    id: '/my-holdings/retire/$projectId',
-    path: '/my-holdings/retire/$projectId',
-    getParentRoute: () => AuthenticatedDashboardLayoutRoute,
+    id: '/retire/$projectId',
+    path: '/retire/$projectId',
+    getParentRoute: () => AuthenticatedDashboardLayoutMyHoldingsRoute,
   } as any)
 const AuthenticatedDashboardLayoutSourceProjectProjectIdRoute =
   AuthenticatedDashboardLayoutSourceProjectProjectIdRouteImport.update({
@@ -108,10 +108,10 @@ export interface FileRoutesByFullPath {
   '/register': typeof publicRegisterRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/explore': typeof AuthenticatedDashboardLayoutExploreRoute
+  '/my-holdings': typeof AuthenticatedDashboardLayoutMyHoldingsRouteWithChildren
   '/portfolio': typeof AuthenticatedDashboardLayoutPortfolioRoute
   '/settings': typeof AuthenticatedDashboardLayoutSettingsRoute
   '/my-holdings/retirements': typeof AuthenticatedDashboardLayoutMyHoldingsRetirementsRoute
-  '/my-holdings': typeof AuthenticatedDashboardLayoutMyHoldingsIndexRoute
   '/$source/project/$projectId': typeof AuthenticatedDashboardLayoutSourceProjectProjectIdRoute
   '/my-holdings/retire/$projectId': typeof AuthenticatedDashboardLayoutMyHoldingsRetireProjectIdRoute
   '/$source/project/$projectId/purchase': typeof AuthenticatedDashboardLayoutSourceProjectProjectIdPurchaseRoute
@@ -122,10 +122,10 @@ export interface FileRoutesByTo {
   '/register': typeof publicRegisterRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/explore': typeof AuthenticatedDashboardLayoutExploreRoute
+  '/my-holdings': typeof AuthenticatedDashboardLayoutMyHoldingsRouteWithChildren
   '/portfolio': typeof AuthenticatedDashboardLayoutPortfolioRoute
   '/settings': typeof AuthenticatedDashboardLayoutSettingsRoute
   '/my-holdings/retirements': typeof AuthenticatedDashboardLayoutMyHoldingsRetirementsRoute
-  '/my-holdings': typeof AuthenticatedDashboardLayoutMyHoldingsIndexRoute
   '/$source/project/$projectId': typeof AuthenticatedDashboardLayoutSourceProjectProjectIdRoute
   '/my-holdings/retire/$projectId': typeof AuthenticatedDashboardLayoutMyHoldingsRetireProjectIdRoute
   '/$source/project/$projectId/purchase': typeof AuthenticatedDashboardLayoutSourceProjectProjectIdPurchaseRoute
@@ -139,10 +139,10 @@ export interface FileRoutesById {
   '/_authenticated/_dashboard-layout': typeof AuthenticatedDashboardLayoutRouteWithChildren
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/_dashboard-layout/explore': typeof AuthenticatedDashboardLayoutExploreRoute
+  '/_authenticated/_dashboard-layout/my-holdings': typeof AuthenticatedDashboardLayoutMyHoldingsRouteWithChildren
   '/_authenticated/_dashboard-layout/portfolio': typeof AuthenticatedDashboardLayoutPortfolioRoute
   '/_authenticated/_dashboard-layout/settings': typeof AuthenticatedDashboardLayoutSettingsRoute
   '/_authenticated/_dashboard-layout/my-holdings/retirements': typeof AuthenticatedDashboardLayoutMyHoldingsRetirementsRoute
-  '/_authenticated/_dashboard-layout/my-holdings/': typeof AuthenticatedDashboardLayoutMyHoldingsIndexRoute
   '/_authenticated/_dashboard-layout/$source/project/$projectId_': typeof AuthenticatedDashboardLayoutSourceProjectProjectIdRoute
   '/_authenticated/_dashboard-layout/my-holdings/retire/$projectId': typeof AuthenticatedDashboardLayoutMyHoldingsRetireProjectIdRoute
   '/_authenticated/_dashboard-layout/$source/project/$projectId/purchase': typeof AuthenticatedDashboardLayoutSourceProjectProjectIdPurchaseRoute
@@ -155,10 +155,10 @@ export interface FileRouteTypes {
     | '/register'
     | '/onboarding'
     | '/explore'
+    | '/my-holdings'
     | '/portfolio'
     | '/settings'
     | '/my-holdings/retirements'
-    | '/my-holdings'
     | '/$source/project/$projectId'
     | '/my-holdings/retire/$projectId'
     | '/$source/project/$projectId/purchase'
@@ -169,10 +169,10 @@ export interface FileRouteTypes {
     | '/register'
     | '/onboarding'
     | '/explore'
+    | '/my-holdings'
     | '/portfolio'
     | '/settings'
     | '/my-holdings/retirements'
-    | '/my-holdings'
     | '/$source/project/$projectId'
     | '/my-holdings/retire/$projectId'
     | '/$source/project/$projectId/purchase'
@@ -185,10 +185,10 @@ export interface FileRouteTypes {
     | '/_authenticated/_dashboard-layout'
     | '/_authenticated/onboarding'
     | '/_authenticated/_dashboard-layout/explore'
+    | '/_authenticated/_dashboard-layout/my-holdings'
     | '/_authenticated/_dashboard-layout/portfolio'
     | '/_authenticated/_dashboard-layout/settings'
     | '/_authenticated/_dashboard-layout/my-holdings/retirements'
-    | '/_authenticated/_dashboard-layout/my-holdings/'
     | '/_authenticated/_dashboard-layout/$source/project/$projectId_'
     | '/_authenticated/_dashboard-layout/my-holdings/retire/$projectId'
     | '/_authenticated/_dashboard-layout/$source/project/$projectId/purchase'
@@ -259,6 +259,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardLayoutPortfolioRouteImport
       parentRoute: typeof AuthenticatedDashboardLayoutRoute
     }
+    '/_authenticated/_dashboard-layout/my-holdings': {
+      id: '/_authenticated/_dashboard-layout/my-holdings'
+      path: '/my-holdings'
+      fullPath: '/my-holdings'
+      preLoaderRoute: typeof AuthenticatedDashboardLayoutMyHoldingsRouteImport
+      parentRoute: typeof AuthenticatedDashboardLayoutRoute
+    }
     '/_authenticated/_dashboard-layout/explore': {
       id: '/_authenticated/_dashboard-layout/explore'
       path: '/explore'
@@ -266,26 +273,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardLayoutExploreRouteImport
       parentRoute: typeof AuthenticatedDashboardLayoutRoute
     }
-    '/_authenticated/_dashboard-layout/my-holdings/': {
-      id: '/_authenticated/_dashboard-layout/my-holdings/'
-      path: '/my-holdings'
-      fullPath: '/my-holdings'
-      preLoaderRoute: typeof AuthenticatedDashboardLayoutMyHoldingsIndexRouteImport
-      parentRoute: typeof AuthenticatedDashboardLayoutRoute
-    }
     '/_authenticated/_dashboard-layout/my-holdings/retirements': {
       id: '/_authenticated/_dashboard-layout/my-holdings/retirements'
-      path: '/my-holdings/retirements'
+      path: '/retirements'
       fullPath: '/my-holdings/retirements'
       preLoaderRoute: typeof AuthenticatedDashboardLayoutMyHoldingsRetirementsRouteImport
-      parentRoute: typeof AuthenticatedDashboardLayoutRoute
+      parentRoute: typeof AuthenticatedDashboardLayoutMyHoldingsRoute
     }
     '/_authenticated/_dashboard-layout/my-holdings/retire/$projectId': {
       id: '/_authenticated/_dashboard-layout/my-holdings/retire/$projectId'
-      path: '/my-holdings/retire/$projectId'
+      path: '/retire/$projectId'
       fullPath: '/my-holdings/retire/$projectId'
       preLoaderRoute: typeof AuthenticatedDashboardLayoutMyHoldingsRetireProjectIdRouteImport
-      parentRoute: typeof AuthenticatedDashboardLayoutRoute
+      parentRoute: typeof AuthenticatedDashboardLayoutMyHoldingsRoute
     }
     '/_authenticated/_dashboard-layout/$source/project/$projectId_': {
       id: '/_authenticated/_dashboard-layout/$source/project/$projectId_'
@@ -304,14 +304,30 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedDashboardLayoutMyHoldingsRouteChildren {
+  AuthenticatedDashboardLayoutMyHoldingsRetirementsRoute: typeof AuthenticatedDashboardLayoutMyHoldingsRetirementsRoute
+  AuthenticatedDashboardLayoutMyHoldingsRetireProjectIdRoute: typeof AuthenticatedDashboardLayoutMyHoldingsRetireProjectIdRoute
+}
+
+const AuthenticatedDashboardLayoutMyHoldingsRouteChildren: AuthenticatedDashboardLayoutMyHoldingsRouteChildren =
+  {
+    AuthenticatedDashboardLayoutMyHoldingsRetirementsRoute:
+      AuthenticatedDashboardLayoutMyHoldingsRetirementsRoute,
+    AuthenticatedDashboardLayoutMyHoldingsRetireProjectIdRoute:
+      AuthenticatedDashboardLayoutMyHoldingsRetireProjectIdRoute,
+  }
+
+const AuthenticatedDashboardLayoutMyHoldingsRouteWithChildren =
+  AuthenticatedDashboardLayoutMyHoldingsRoute._addFileChildren(
+    AuthenticatedDashboardLayoutMyHoldingsRouteChildren,
+  )
+
 interface AuthenticatedDashboardLayoutRouteChildren {
   AuthenticatedDashboardLayoutExploreRoute: typeof AuthenticatedDashboardLayoutExploreRoute
+  AuthenticatedDashboardLayoutMyHoldingsRoute: typeof AuthenticatedDashboardLayoutMyHoldingsRouteWithChildren
   AuthenticatedDashboardLayoutPortfolioRoute: typeof AuthenticatedDashboardLayoutPortfolioRoute
   AuthenticatedDashboardLayoutSettingsRoute: typeof AuthenticatedDashboardLayoutSettingsRoute
-  AuthenticatedDashboardLayoutMyHoldingsRetirementsRoute: typeof AuthenticatedDashboardLayoutMyHoldingsRetirementsRoute
-  AuthenticatedDashboardLayoutMyHoldingsIndexRoute: typeof AuthenticatedDashboardLayoutMyHoldingsIndexRoute
   AuthenticatedDashboardLayoutSourceProjectProjectIdRoute: typeof AuthenticatedDashboardLayoutSourceProjectProjectIdRoute
-  AuthenticatedDashboardLayoutMyHoldingsRetireProjectIdRoute: typeof AuthenticatedDashboardLayoutMyHoldingsRetireProjectIdRoute
   AuthenticatedDashboardLayoutSourceProjectProjectIdPurchaseRoute: typeof AuthenticatedDashboardLayoutSourceProjectProjectIdPurchaseRoute
 }
 
@@ -319,18 +335,14 @@ const AuthenticatedDashboardLayoutRouteChildren: AuthenticatedDashboardLayoutRou
   {
     AuthenticatedDashboardLayoutExploreRoute:
       AuthenticatedDashboardLayoutExploreRoute,
+    AuthenticatedDashboardLayoutMyHoldingsRoute:
+      AuthenticatedDashboardLayoutMyHoldingsRouteWithChildren,
     AuthenticatedDashboardLayoutPortfolioRoute:
       AuthenticatedDashboardLayoutPortfolioRoute,
     AuthenticatedDashboardLayoutSettingsRoute:
       AuthenticatedDashboardLayoutSettingsRoute,
-    AuthenticatedDashboardLayoutMyHoldingsRetirementsRoute:
-      AuthenticatedDashboardLayoutMyHoldingsRetirementsRoute,
-    AuthenticatedDashboardLayoutMyHoldingsIndexRoute:
-      AuthenticatedDashboardLayoutMyHoldingsIndexRoute,
     AuthenticatedDashboardLayoutSourceProjectProjectIdRoute:
       AuthenticatedDashboardLayoutSourceProjectProjectIdRoute,
-    AuthenticatedDashboardLayoutMyHoldingsRetireProjectIdRoute:
-      AuthenticatedDashboardLayoutMyHoldingsRetireProjectIdRoute,
     AuthenticatedDashboardLayoutSourceProjectProjectIdPurchaseRoute:
       AuthenticatedDashboardLayoutSourceProjectProjectIdPurchaseRoute,
   }
