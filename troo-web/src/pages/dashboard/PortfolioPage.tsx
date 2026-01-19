@@ -76,7 +76,7 @@ const getMyHoldingsApi = async (): Promise<Holding[]> => {
 };
 
 
-export const MyHoldingsPage = () => {
+export const PortfolioPage = () => {
   const queryClient = useQueryClient();
 
 //   const { data: holdings, isLoading } = useQuery({
@@ -172,7 +172,7 @@ export const MyHoldingsPage = () => {
                     </div>
                     
                     <div className="mt-4 pt-4 border-t border-gray-50 text-center">
-                        <Link to="/my-holdings/retirements" className="text-xs font-bold text-gray-400 hover:text-primary transition-colors">
+                        <Link to="/portfolio/retirements" className="text-xs font-bold text-gray-400 hover:text-primary transition-colors">
                             View All Retirements
                         </Link>
                     </div>
