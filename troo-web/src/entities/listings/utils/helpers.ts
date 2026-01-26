@@ -1,9 +1,9 @@
-import type { Project, ProjectResponse } from "../types/projectTypes";
+import type { Listing, ListingResponse } from "../types/listingTypes";
 
 export const fallBackUrl = "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?q=80&w=2613&auto=format&fit=crop";
 
 
-export const transformProject = (apiProject: ProjectResponse): Project => ({
+export const transformListing = (apiProject: ListingResponse): Listing => ({
   id: apiProject.id,
   projectid: apiProject.projectid,
   imageUrl: apiProject.imageUrl || fallBackUrl,

@@ -3,29 +3,31 @@ import {
   ExternalLink, FileText, Zap, Leaf, CheckCircle,
   Building2, BadgeCheck, FileSearch, 
   Info, Download, Clock, Globe,
+  Store,
 } from 'lucide-react';
-import { Link, useParams, useSearch } from '@tanstack/react-router';
+import { Link, useParams } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
-import { getProjectByIdApi } from '../../../entities/projects/api/projectApi'; 
 import LoadingScreen from '@/components/global/Loading';
 import { Button } from '@/components/ui/buttons/Button';
-import { fallBackUrl, getCountryName, getSDGColor } from '@/entities/projects/utils/helpers';
+import { fallBackUrl, getCountryName, getSDGColor } from '@/entities/listings/utils/helpers';
 import useScrollToTopOnNav from '@/hooks/useScrollToTopOnNav';
+import { useState } from 'react';
+import { PurchaseModal } from '@/entities/listings/components/ListingPurchaseModal';
+import { listingQueries } from '@/entities/listings/queries/listingQueries';
 
-export const ProjectPage = () => {
-  const { source, projectId } = useParams({ from: '/_authenticated/_dashboard-layout/$source/project/$projectId_' });
-  const { price } = useSearch({ from: '/_authenticated/_dashboard-layout/$source/project/$projectId_' })
+export const ListingPage = () => {
+  const { source, listingId } = useParams({ from: '/_authenticated/_dashboard-layout/$source/listing/$listingId_' });
 
   useScrollToTopOnNav();
 
-  const { data: project, isLoading, isError } = useQuery({
-    queryKey: ['project', projectId],
-    queryFn: () => getProjectByIdApi(projectId),
-    staleTime: 20 * 60 * 1000,
-  });
+  const [isPurchaseModalOpen, setPurchaseModalOpen] = useState(false);
+
+  const { data: listing, isLoading, isError } = useQuery(listingQueries.ById(listingId));
+
+  const project = listing?.project
 
   if (isLoading) return <LoadingScreen />;
-  if (isError || !project) return <div className="p-20 text-center font-bold">Project data unavailable</div>;
+  if (isError || !listing) return <div className="p-20 text-center font-bold">Listing data unavailable</div>;
 
   return (
     <div className="min-h-screen font-nunito relative">
@@ -38,7 +40,7 @@ export const ProjectPage = () => {
               </button>
           </Link>
           
-          {project.id && (
+          {project?.id && (
             <div className="flex items-center gap-1.5 px-4 py-1.5 bg-gray-50 rounded-full border border-gray-100">
               <span className="text-[10px] font-black text-primary capitalize tracking-widest">Registry ID:</span>
               <span className="text-[12px] font-bold text-gray-900 ">{project.id}</span>
@@ -54,23 +56,23 @@ export const ProjectPage = () => {
             
             <section className="space-y-4">
               <div className="flex gap-2">
-                {project.type?.title && (
+                {project?.type?.title && (
                     <span className="bg-primary/10 text-primary text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider">{project.type.title}</span>
                 )}
-                {project.registry && (
+                {project?.registry && (
                     <span className="bg-gray-100 text-gray-600 text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider">{project.registry}</span>
                 )}
               </div>
-              <h1 className="text-4xl font-black text-gray-900 leading-tight">{project.fullName}</h1>
+              <h1 className="text-4xl font-black text-gray-900 leading-tight">{project?.fullName}</h1>
               
               <div className="flex flex-wrap items-center gap-x-8 gap-y-3 text-gray-500 font-bold text-sm">
-                {(project.city || project.countryCode) && (
+                {(project?.city || project?.countryCode) && (
                     <div className="flex items-center gap-2"><MapPin className="w-4 h-4 text-primary" /> {project.city}{project.city && ','} {getCountryName(project.countryCode)}</div>
                 )}
-                {project.startDate && (
+                {project?.startDate && (
                     <div className="flex items-center gap-2"><Calendar className="w-4 h-4 text-primary" /> Started: {new Date(project.startDate).toLocaleDateString()}</div>
                 )}
-                {project.creditingPeriodStartDate && (
+                {project?.creditingPeriodStartDate && (
                     <div className="flex items-center gap-2 text-primary">
                         <Clock className="w-4 h-4" /> 
                         <span>Crediting period: {new Date(project.creditingPeriodStartDate).toLocaleDateString()}</span>
@@ -80,8 +82,8 @@ export const ProjectPage = () => {
             </section>
 
                 <div className="relative aspect-video rounded-[2.5rem] overflow-hidden shadow-2xl group">
-                    <img src={project.thumbnail || fallBackUrl} alt={project.fullName} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                    {project.methodology?.title && (
+                    <img src={project?.thumbnail || fallBackUrl} alt={project?.fullName} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                    {project?.methodology?.title && (
                         <div className="absolute bottom-6 left-6 bg-white/90 backdrop-blur-md p-4 rounded-2xl border border-white/20 shadow-xl max-w-70">
                             <div className="flex items-center gap-2 mb-1">
                                 <Info className="w-3.5 h-3.5 text-primary" />
@@ -92,14 +94,14 @@ export const ProjectPage = () => {
                     )}
                 </div>
 
-            {project.description && (
+            {project?.description && (
                 <section className="space-y-6">
                     <h3 className="text-2xl font-black text-gray-900">Project Overview</h3>
                     <p className="text-gray-600 leading-relaxed text-lg font-medium whitespace-pre-wrap">{project.description}</p>
                 </section>
             )}
 
-            {project.additionalities && project.additionalities.length > 0 && (
+            {project?.additionalities && project?.additionalities.length > 0 && (
                 <section className="space-y-8 pt-8 border-t border-gray-100">
                     <div className="flex items-center justify-between">
                         <h3 className="text-2xl font-black text-gray-900 flex items-center gap-2">
@@ -133,24 +135,48 @@ export const ProjectPage = () => {
                 <div className="mb-6">
                     <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Market Price</span>
                     <div className="flex items-baseline gap-1 mt-1">
-                        <span className="text-4xl font-black text-gray-900">${price}</span>
+                        <span className="text-4xl font-black text-gray-900">${listing?.price_per_credit}</span>
                         <span className="text-gray-400 font-bold">/ tCO2e</span>
                     </div>
                 </div>
 
                 <div className="space-y-3 mb-8 pt-6 border-t border-gray-50">
-                    {project.estimatedAnnualMitigations && (
+                    {listing?.seller && (
+                        <div className="flex justify-between items-center pb-3 mb-3 border-b border-gray-50 border-dashed">
+                            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tight flex items-center gap-1.5">
+                                <Store className="w-3.5 h-3.5" /> Sold By
+                            </span>
+                            <div className="flex items-center gap-1.5">
+                                <span className="text-sm font-black text-gray-900 text-right max-w-37.5 truncate" title={listing.seller.name}>
+                                    {listing.seller.name}
+                                </span>
+                                {listing.seller.type === 'registry' && (
+                                    <BadgeCheck className="w-4 h-4 text-blue-500" />
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {listing?.credits_available && (
+                        <div className="flex justify-between items-center">
+                            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tight">Credits Available</span>
+                            <div className="flex items-center gap-1.5">
+                                <span className="text-sm font-black text-gray-900">{parseFloat(listing.credits_available)}</span>
+                            </div>
+                        </div>
+                    )}
+                    {project?.estimatedAnnualMitigations && (
                         <div className="flex justify-between items-center">
                             <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tight">Total Volume</span>
                             <span className="text-sm font-black text-gray-900">
-                                {project.estimatedAnnualMitigations.reduce((acc, curr) => {
+                                {project?.estimatedAnnualMitigations.reduce((acc, curr) => {
                                     return acc + (curr.estimatedMitigation || 0);
                                     }, 0).toLocaleString()} 
                                 <span className="ml-1 text-gray-400 font-bold">tCO2e</span>
                             </span>
                         </div>
                     )}
-                    {project.status && (
+                    {project?.status && (
                         <div className="flex justify-between items-center">
                             <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tight">Project Status</span>
                             <div className="flex items-center gap-1.5">
@@ -161,11 +187,9 @@ export const ProjectPage = () => {
                     )}
                 </div>
 
-                <Link to="/$source/project/$projectId/purchase" params={{ source: source, projectId: projectId }} search={{ price: price }}>
-                    <Button className="w-full bg-primary hover:bg-primary-dark cursor-pointer text-white py-5 rounded-2xl font-black text-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary/20 flex items-center justify-center gap-3">
+                    <Button onClick={() => setPurchaseModalOpen(true)} className="w-full bg-primary hover:bg-primary-dark cursor-pointer text-white py-5 rounded-2xl font-black text-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary/20 flex items-center justify-center gap-3">
                         Buy Carbon Credits <Zap className="w-5 h-5 fill-current" />
                     </Button>
-                </Link>
 
                 <div className="mt-6 flex items-center justify-center gap-2 py-3 px-4 bg-gray-50 rounded-xl border border-gray-100">
                     <ShieldCheck className="w-4 h-4 text-gray-400" />
@@ -175,7 +199,7 @@ export const ProjectPage = () => {
                 </div>
               </div>
 
-              {project.otherBenefits && project.otherBenefits.length > 0 && (
+              {project?.otherBenefits && project?.otherBenefits.length > 0 && (
                 <div className="bg-gray-50/50 rounded-4xl p-6 border border-gray-100">
                     <h4 className="text-[10px] font-black text-primary uppercase tracking-widest mb-4 flex items-center gap-2">
                         <Globe className="w-3.5 h-3.5" /> SDG Impact
@@ -198,9 +222,9 @@ export const ProjectPage = () => {
                 </div>
               )}
 
-              {( (project.proponents && project.proponents.length > 0) || (project.validators && project.validators.length > 0) ) && (
+              {( (project?.proponents && project?.proponents.length > 0) || (project?.validators && project?.validators.length > 0) ) && (
                 <div className="bg-gray-50/50 rounded-4xl p-6 border border-gray-100 space-y-8">
-                    {project.proponents && project.proponents.length > 0 && (
+                    {project?.proponents && project?.proponents.length > 0 && (
                         <div>
                             <h4 className="text-[10px] font-black text-primary uppercase tracking-widest mb-4 flex items-center gap-2">
                                 <Building2 className="w-3.5 h-3.5" /> Project Proponents
@@ -230,14 +254,14 @@ export const ProjectPage = () => {
                 </div>
               )}
 
-              {project.documentation && project.documentation.length > 0 && (
+              {project?.documentation && project?.documentation.length > 0 && (
                 <div className="bg-gray-50/50 rounded-4xl p-6 border border-gray-100">
                     <h4 className="text-[10px] font-black text-gray-900 uppercase tracking-widest mb-4 flex items-center gap-2">
                         <FileSearch className="w-3.5 h-3.5 text-primary" /> Project Hub
                     </h4>
                     <div className="space-y-2">
                         {project.documentation.map(doc => {
-                            const isDownloadable = /\.(pdf|xlsx|csv|kml)$/i.test(doc.name);
+                            const isDownloadable = /\.(pdf|xlsx|csv|kml)$/i.test(doc.name || '');
                             return (
                                 <a 
                                     key={doc.id} 
@@ -252,7 +276,7 @@ export const ProjectPage = () => {
                                         </div>
                                         {isDownloadable ? <Download className="w-3.5 h-3.5 text-primary" /> : <ExternalLink className="w-3.5 h-3.5 text-gray-300" />}
                                     </div>
-                                    <span className="text-[11px] font-black text-gray-800 line-clamp-1">{doc.name}</span>
+                                    <span className="text-[11px] font-black text-gray-800 line-clamp-1">{doc.name || 'Unnamed Document'}</span>
                                     <span className="text-[9px] font-bold text-gray-400 uppercase mt-0.5">{doc.type?.replace(/([A-Z])/g, ' $1')}</span>
                                 </a>
                             );
@@ -264,6 +288,14 @@ export const ProjectPage = () => {
           </div>
         </div>
       </main>
+      <PurchaseModal 
+        isOpen={isPurchaseModalOpen}
+        onClose={() => setPurchaseModalOpen(false)}
+        listingId={listingId}
+        pricePerCredit={Number(listing?.price_per_credit || 0)}
+        projectTitle={listing?.project?.fullName || 'Project'}
+        registry={listing?.project?.registry || 'Standard'}
+      />
     </div>
   );
 };

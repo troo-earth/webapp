@@ -9,8 +9,8 @@ const Header: React.FC = () => {
 
   const getTitle = () => {
     const pathname = location.pathname;
-    if (pathname.includes('project')) {
-      return 'Project Details';
+    if (pathname.includes('listing')) {
+      return 'Listing Details';
     }
     const path = location.pathname.split('/').pop() || 'Dashboard';
     return path.replace(/-/g, ' ');

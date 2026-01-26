@@ -1,6 +1,15 @@
 import { OnboardingPage } from '@/pages/auth/OnboardingPage'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_authenticated/onboarding')({
-    component: () => <OnboardingPage/>,
+  beforeLoad: ({ context }) => {
+    const user = context?.user;
+    if (user?.org_id) {
+      throw redirect({
+        to: '/explore', 
+        replace: true,
+      });
+    }
+  },
+  component: () => <OnboardingPage />,
 })
