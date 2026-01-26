@@ -49,15 +49,15 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = () => {
       return;
     }
 
-    const data = new FormData();
-    data.append('companyName', result.data.companyName);
-    data.append('countryCode', result.data.countryCode);
-    data.append('registrationId', result.data.registrationId);
-    data.append('logo', result.data.logo);
-    data.append('proof', result.data.proof);
-    console.log("Submitting onboarding with data:", result.data);
-
-    mutate(data);
+    mutate({
+    formData: {
+      companyName: result.data.companyName,
+      countryCode: result.data.countryCode,
+      registrationId: result.data.registrationId,
+    },
+    logoFile: result.data.logo,
+    proofFile: result.data.proof 
+  });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'logo' | 'proof') => {

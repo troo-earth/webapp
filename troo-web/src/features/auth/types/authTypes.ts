@@ -46,3 +46,13 @@ export interface OrgResponse {
   message: string;
   data: Organization;
 }
+
+export interface OnboardingParams{
+  formData: {
+    companyName: string;
+    countryCode: string;
+    registrationId: string;
+  };
+  logoFile: File;   
+  proofFile: File;  
+}

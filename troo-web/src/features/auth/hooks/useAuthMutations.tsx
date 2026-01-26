@@ -3,6 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { loginApi, onboardingApi, registerApi, uploadLogoApi, uploadProofApi } from "../api/authApi";
 import { authQueries } from "../query/authQuery";
 import { notify } from "@/components/global/Toast";
+import type { OnboardingParams } from "../types/authTypes";
 
 
 export const useRegister = () => {

@@ -187,7 +187,7 @@ const SettingsPage = () => {
     <div className="mx-auto space-y-16 p-8">
       
       {!isRestricted && (
-      <div>
+      <div className='flex flex-col gap-16'>
         <section>
           <div className="mb-6">
             <h2 className="text-2xl font-black text-[#0F1F1F]">Organization Settings</h2>
