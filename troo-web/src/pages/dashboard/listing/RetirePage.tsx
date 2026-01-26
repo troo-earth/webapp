@@ -1,13 +1,11 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Leaf, ArrowRight, Info, ShieldCheck, TreePine, Droplets, ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/buttons/Button'; // Assuming your custom button
-import BgGradient from '@/components/ui/global/BgGradient';
+import { Button } from '@/components/ui/buttons/Button'; 
 import { Link } from '@tanstack/react-router';
 
 const RetireCreditsPage = () => {
   const [retireAmount, setRetireAmount] = useState(0);
   
-  // Mock data - replace with your actual project data
   const project = {
     name: "Amazonian Rainforest Protection",
     location: "Brazil",
@@ -18,7 +16,7 @@ const RetireCreditsPage = () => {
   };
 
   const maxRetire = project.availableQuantity;
-  const impactScore = (retireAmount * 1.2).toFixed(1); // Mock calculation
+  const impactScore = (retireAmount * 1.2).toFixed(1); 
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -26,7 +24,7 @@ const RetireCreditsPage = () => {
       <div className="mx-auto relative z-10">
         <header className="p-4 pt-6">
         <div className=" mx-auto flex items-center justify-between">
-          <Link to="/my-holdings">
+          <Link to="/my-listings">
             <button className="flex items-center gap-2 text-gray-400 hover:text-primary transition-all font-bold text-sm cursor-pointer group">
               <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1" />
               <span>Back to Holdings</span>
@@ -46,8 +44,8 @@ const RetireCreditsPage = () => {
             
               {/* LEFT: Project Details Card */}
               <div className="lg:col-span-5">
-                <div className="bg-white/70 backdrop-blur-2xl rounded-[2rem] p-2 border border-white shadow-xl overflow-hidden">
-                  <div className="relative h-48 w-full rounded-[1.5rem] overflow-hidden mb-6">
+                <div className="bg-white/70 backdrop-blur-2xl rounded-4xl p-2 border border-white shadow-xl overflow-hidden">
+                  <div className="relative h-48 w-full rounded-3xl overflow-hidden mb-6">
                     <img src={project.image} alt={project.name} className="w-full h-full object-cover" />
                     <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full flex items-center gap-2">
                       <TreePine size={14} className="text-primary" />
@@ -122,7 +120,7 @@ const RetireCreditsPage = () => {
 
       {/* Impact Grid */}
       <div className="mt-8 grid grid-cols-2 gap-4">
-        <div className="p-5 rounded-[1.5rem] bg-white/60 border border-white shadow-sm transition-transform hover:scale-[1.02]">
+        <div className="p-5 rounded-3xl bg-white/60 border border-white shadow-sm transition-transform hover:scale-[1.02]">
           <p className="text-[9px] font-black text-gray-400 uppercase mb-2 tracking-widest">Impact Offset</p>
           <p className="text-xl font-bold text-[#0F1F1F] flex items-center gap-2">
             <div className="p-1.5 rounded-lg bg-green-50">
@@ -131,7 +129,7 @@ const RetireCreditsPage = () => {
             {impactScore} <span className="text-xs font-medium text-gray-400">Acres</span>
           </p>
         </div>
-        <div className="p-5 rounded-[1.5rem] bg-white/60 border border-white shadow-sm transition-transform hover:scale-[1.02]">
+        <div className="p-5 rounded-3xl bg-white/60 border border-white shadow-sm transition-transform hover:scale-[1.02]">
           <p className="text-[9px] font-black text-gray-400 uppercase mb-2 tracking-widest">Water Protected</p>
           <p className="text-xl font-bold text-[#0F1F1F] flex items-center gap-2">
             <div className="p-1.5 rounded-lg bg-blue-50">

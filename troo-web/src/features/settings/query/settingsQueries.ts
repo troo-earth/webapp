@@ -7,6 +7,7 @@ export const settingsQueries = {
         queryFn: () => getInfoByOrgIdApi(),
         staleTime: 30 * 60 * 1000,
         }),
+        
     viewUserInfo : (userId:string) => queryOptions({
         queryKey: ['view-user'],
         queryFn: () => getInfoByUserIdApi(userId),

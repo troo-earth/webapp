@@ -1,5 +1,4 @@
-import React from 'react';
-import { ExternalLink, FileText, Calendar, Leaf, CheckCircle2, ChevronRight, Lock, ArrowLeft } from 'lucide-react';
+import { ExternalLink, FileText, Calendar, Leaf, CheckCircle2, Lock, ArrowLeft } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 
 const RetirementHistory = () => {
@@ -30,7 +29,7 @@ const RetirementHistory = () => {
     <div className="w-full ">
         <header className="p-4 pt-6">
         <div className=" mx-auto flex items-center justify-between">
-          <Link to="/my-holdings">
+          <Link to="/my-listings">
             <button className="flex items-center gap-2 text-gray-400 hover:text-primary transition-all font-bold text-sm cursor-pointer group">
               <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1" />
               <span>Back to Holdings</span>
@@ -56,7 +55,7 @@ const RetirementHistory = () => {
             {retirements.map((item) => (
               <div
                 key={item.id}
-                className="group relative bg-white/50 backdrop-blur-md border border-white hover:border-primary/20 hover:bg-white/80 transition-all rounded-[2rem] p-6 flex flex-col md:flex-row items-center gap-6 shadow-sm hover:shadow-xl hover:-translate-y-1"
+                className="group relative bg-white/50 backdrop-blur-md border border-white hover:border-primary/20 hover:bg-white/80 transition-all rounded-4xl p-6 flex flex-col md:flex-row items-center gap-6 shadow-sm hover:shadow-xl hover:-translate-y-1"
               >
                 {/* Status Icon */}
                 <div className="hidden md:flex w-12 h-12 rounded-2xl bg-primary/5 items-center justify-center text-primary">
@@ -81,7 +80,7 @@ const RetirementHistory = () => {
                      </div>
                      <div className="flex items-center gap-1">
                         <FileText size={12} />
-                        <span className="text-xs font-medium truncate max-w-[120px]">{item.beneficiary}</span>
+                        <span className="text-xs font-medium truncate max-w-30">{item.beneficiary}</span>
                      </div>
                   </div>
                 </div>

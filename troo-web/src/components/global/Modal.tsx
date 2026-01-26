@@ -17,6 +17,7 @@ export const Modal = ({
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
     
     if (isOpen) {
@@ -30,7 +31,7 @@ export const Modal = ({
   if (!isOpen || !mounted) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-[#0F1F1F]/20 backdrop-blur-sm">
+    <div className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-[#0F1F1F]/20 backdrop-blur-sm">
       <div className="absolute inset-0" onClick={onClose} />
       
       <div className="relative bg-white rounded-[2.5rem] border border-white shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh]">

@@ -63,6 +63,7 @@ const MinimalToast = ({
 };
 
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const notify = {
   success: (title: string, message?: string) => 
     toast.custom((t) => <MinimalToast t={t} title={title} message={message} type="success" />),

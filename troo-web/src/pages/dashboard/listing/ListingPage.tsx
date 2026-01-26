@@ -7,7 +7,6 @@ import {
 } from 'lucide-react';
 import { Link, useParams } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
-import { getListingByIdApi } from '../../../entities/listings/api/listingApi'; 
 import LoadingScreen from '@/components/global/Loading';
 import { Button } from '@/components/ui/buttons/Button';
 import { fallBackUrl, getCountryName, getSDGColor } from '@/entities/listings/utils/helpers';

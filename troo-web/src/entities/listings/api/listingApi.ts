@@ -1,6 +1,6 @@
 import { api } from "@/lib/axiosConfig";
 import { handleError } from "@/utils/utils";
-import type { ListingDetail, ListingDetailResponse ,ListingResponse, ListingsApiResponse, PaymentIntentResponse } from "../types/listingTypes";
+import type { ListingData, ListingDetailResponse ,ListingResponse, ListingsApiResponse, PaymentIntentResponse } from "../types/listingTypes";
 
 
 export const getAllListingsApi = async (): Promise<ListingResponse[]> => {
@@ -26,7 +26,7 @@ export const getAllListingsApi = async (): Promise<ListingResponse[]> => {
 };
 
 
-export const getListingByIdApi = async (id:string): Promise<ListingDetail> =>{
+export const getListingByIdApi = async (id:string): Promise<ListingData> =>{
   try{
     const response = await api.get<ListingDetailResponse>(`/listings/get-listing/${id}`);
     return response.data.data;

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { motion } from 'framer-motion';
 import { Check, ArrowRight } from 'lucide-react';
@@ -10,7 +10,6 @@ const PaymentSuccessPage = () => {
   const [countdown, setCountdown] = useState(5);
   const totalTime = 5;
 
-  // 1. Handle Countdown & Redirect
   useEffect(() => {
     if (countdown === 0) {
       navigate({ to: '/portfolio' });
@@ -24,7 +23,6 @@ const PaymentSuccessPage = () => {
     return () => clearInterval(timer);
   }, [countdown, navigate]);
 
-  // 2. Calculate Circle Stroke for SVG
   const radius = 24;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (countdown / totalTime) * circumference;
