@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthenticatedPurchaseSuccessRouteImport } from './routes/_authenticated/purchase-success'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedDashboardLayoutRouteImport } from './routes/_authenticated/_dashboard-layout'
 import { Route as publicRegisterRouteImport } from './routes/(public)/register'
@@ -23,6 +22,7 @@ import { Route as AuthenticatedDashboardLayoutPortfolioIndexRouteImport } from '
 import { Route as AuthenticatedDashboardLayoutPortfolioRetirementsRouteImport } from './routes/_authenticated/_dashboard-layout/portfolio/retirements'
 import { Route as AuthenticatedDashboardLayoutPortfolioRetireProjectIdRouteImport } from './routes/_authenticated/_dashboard-layout/portfolio/retire.$projectId'
 import { Route as AuthenticatedDashboardLayoutSourceListingListingIdRouteImport } from './routes/_authenticated/_dashboard-layout/$source/listing.$listingId_'
+import { Route as AuthenticatedDashboardLayoutSourceListingListingIdPurchaseRouteImport } from './routes/_authenticated/_dashboard-layout/$source/listing.$listingId.purchase'
 
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
@@ -33,12 +33,6 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedPurchaseSuccessRoute =
-  AuthenticatedPurchaseSuccessRouteImport.update({
-    id: '/purchase-success',
-    path: '/purchase-success',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
 const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
@@ -101,13 +95,18 @@ const AuthenticatedDashboardLayoutSourceListingListingIdRoute =
     path: '/$source/listing/$listingId',
     getParentRoute: () => AuthenticatedDashboardLayoutRoute,
   } as any)
+const AuthenticatedDashboardLayoutSourceListingListingIdPurchaseRoute =
+  AuthenticatedDashboardLayoutSourceListingListingIdPurchaseRouteImport.update({
+    id: '/$source/listing/$listingId/purchase',
+    path: '/$source/listing/$listingId/purchase',
+    getParentRoute: () => AuthenticatedDashboardLayoutRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof publicLoginRoute
   '/register': typeof publicRegisterRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
-  '/purchase-success': typeof AuthenticatedPurchaseSuccessRoute
   '/explore': typeof AuthenticatedDashboardLayoutExploreRoute
   '/my-listings': typeof AuthenticatedDashboardLayoutMyListingsRoute
   '/settings': typeof AuthenticatedDashboardLayoutSettingsRoute
@@ -115,13 +114,13 @@ export interface FileRoutesByFullPath {
   '/portfolio': typeof AuthenticatedDashboardLayoutPortfolioIndexRoute
   '/$source/listing/$listingId': typeof AuthenticatedDashboardLayoutSourceListingListingIdRoute
   '/portfolio/retire/$projectId': typeof AuthenticatedDashboardLayoutPortfolioRetireProjectIdRoute
+  '/$source/listing/$listingId/purchase': typeof AuthenticatedDashboardLayoutSourceListingListingIdPurchaseRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof publicLoginRoute
   '/register': typeof publicRegisterRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
-  '/purchase-success': typeof AuthenticatedPurchaseSuccessRoute
   '/explore': typeof AuthenticatedDashboardLayoutExploreRoute
   '/my-listings': typeof AuthenticatedDashboardLayoutMyListingsRoute
   '/settings': typeof AuthenticatedDashboardLayoutSettingsRoute
@@ -129,6 +128,7 @@ export interface FileRoutesByTo {
   '/portfolio': typeof AuthenticatedDashboardLayoutPortfolioIndexRoute
   '/$source/listing/$listingId': typeof AuthenticatedDashboardLayoutSourceListingListingIdRoute
   '/portfolio/retire/$projectId': typeof AuthenticatedDashboardLayoutPortfolioRetireProjectIdRoute
+  '/$source/listing/$listingId/purchase': typeof AuthenticatedDashboardLayoutSourceListingListingIdPurchaseRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -138,7 +138,6 @@ export interface FileRoutesById {
   '/(public)/register': typeof publicRegisterRoute
   '/_authenticated/_dashboard-layout': typeof AuthenticatedDashboardLayoutRouteWithChildren
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
-  '/_authenticated/purchase-success': typeof AuthenticatedPurchaseSuccessRoute
   '/_authenticated/_dashboard-layout/explore': typeof AuthenticatedDashboardLayoutExploreRoute
   '/_authenticated/_dashboard-layout/my-listings': typeof AuthenticatedDashboardLayoutMyListingsRoute
   '/_authenticated/_dashboard-layout/settings': typeof AuthenticatedDashboardLayoutSettingsRoute
@@ -146,6 +145,7 @@ export interface FileRoutesById {
   '/_authenticated/_dashboard-layout/portfolio/': typeof AuthenticatedDashboardLayoutPortfolioIndexRoute
   '/_authenticated/_dashboard-layout/$source/listing/$listingId_': typeof AuthenticatedDashboardLayoutSourceListingListingIdRoute
   '/_authenticated/_dashboard-layout/portfolio/retire/$projectId': typeof AuthenticatedDashboardLayoutPortfolioRetireProjectIdRoute
+  '/_authenticated/_dashboard-layout/$source/listing/$listingId/purchase': typeof AuthenticatedDashboardLayoutSourceListingListingIdPurchaseRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -154,7 +154,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/onboarding'
-    | '/purchase-success'
     | '/explore'
     | '/my-listings'
     | '/settings'
@@ -162,13 +161,13 @@ export interface FileRouteTypes {
     | '/portfolio'
     | '/$source/listing/$listingId'
     | '/portfolio/retire/$projectId'
+    | '/$source/listing/$listingId/purchase'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/login'
     | '/register'
     | '/onboarding'
-    | '/purchase-success'
     | '/explore'
     | '/my-listings'
     | '/settings'
@@ -176,6 +175,7 @@ export interface FileRouteTypes {
     | '/portfolio'
     | '/$source/listing/$listingId'
     | '/portfolio/retire/$projectId'
+    | '/$source/listing/$listingId/purchase'
   id:
     | '__root__'
     | '/'
@@ -184,7 +184,6 @@ export interface FileRouteTypes {
     | '/(public)/register'
     | '/_authenticated/_dashboard-layout'
     | '/_authenticated/onboarding'
-    | '/_authenticated/purchase-success'
     | '/_authenticated/_dashboard-layout/explore'
     | '/_authenticated/_dashboard-layout/my-listings'
     | '/_authenticated/_dashboard-layout/settings'
@@ -192,6 +191,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_dashboard-layout/portfolio/'
     | '/_authenticated/_dashboard-layout/$source/listing/$listingId_'
     | '/_authenticated/_dashboard-layout/portfolio/retire/$projectId'
+    | '/_authenticated/_dashboard-layout/$source/listing/$listingId/purchase'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -216,13 +216,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/purchase-success': {
-      id: '/_authenticated/purchase-success'
-      path: '/purchase-success'
-      fullPath: '/purchase-success'
-      preLoaderRoute: typeof AuthenticatedPurchaseSuccessRouteImport
-      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/onboarding': {
       id: '/_authenticated/onboarding'
@@ -301,6 +294,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardLayoutSourceListingListingIdRouteImport
       parentRoute: typeof AuthenticatedDashboardLayoutRoute
     }
+    '/_authenticated/_dashboard-layout/$source/listing/$listingId/purchase': {
+      id: '/_authenticated/_dashboard-layout/$source/listing/$listingId/purchase'
+      path: '/$source/listing/$listingId/purchase'
+      fullPath: '/$source/listing/$listingId/purchase'
+      preLoaderRoute: typeof AuthenticatedDashboardLayoutSourceListingListingIdPurchaseRouteImport
+      parentRoute: typeof AuthenticatedDashboardLayoutRoute
+    }
   }
 }
 
@@ -312,6 +312,7 @@ interface AuthenticatedDashboardLayoutRouteChildren {
   AuthenticatedDashboardLayoutPortfolioIndexRoute: typeof AuthenticatedDashboardLayoutPortfolioIndexRoute
   AuthenticatedDashboardLayoutSourceListingListingIdRoute: typeof AuthenticatedDashboardLayoutSourceListingListingIdRoute
   AuthenticatedDashboardLayoutPortfolioRetireProjectIdRoute: typeof AuthenticatedDashboardLayoutPortfolioRetireProjectIdRoute
+  AuthenticatedDashboardLayoutSourceListingListingIdPurchaseRoute: typeof AuthenticatedDashboardLayoutSourceListingListingIdPurchaseRoute
 }
 
 const AuthenticatedDashboardLayoutRouteChildren: AuthenticatedDashboardLayoutRouteChildren =
@@ -330,6 +331,8 @@ const AuthenticatedDashboardLayoutRouteChildren: AuthenticatedDashboardLayoutRou
       AuthenticatedDashboardLayoutSourceListingListingIdRoute,
     AuthenticatedDashboardLayoutPortfolioRetireProjectIdRoute:
       AuthenticatedDashboardLayoutPortfolioRetireProjectIdRoute,
+    AuthenticatedDashboardLayoutSourceListingListingIdPurchaseRoute:
+      AuthenticatedDashboardLayoutSourceListingListingIdPurchaseRoute,
   }
 
 const AuthenticatedDashboardLayoutRouteWithChildren =
@@ -340,14 +343,12 @@ const AuthenticatedDashboardLayoutRouteWithChildren =
 interface AuthenticatedRouteChildren {
   AuthenticatedDashboardLayoutRoute: typeof AuthenticatedDashboardLayoutRouteWithChildren
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
-  AuthenticatedPurchaseSuccessRoute: typeof AuthenticatedPurchaseSuccessRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardLayoutRoute:
     AuthenticatedDashboardLayoutRouteWithChildren,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
-  AuthenticatedPurchaseSuccessRoute: AuthenticatedPurchaseSuccessRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

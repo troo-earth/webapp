@@ -10,6 +10,7 @@ import type { OnboardingPayload } from '../../types/authTypes';
 import { onboardingSchema } from '../../utils/authSchema';
 import { COUNTRY_OPTIONS } from '@/lib/constants';
 import { SelectField } from '@/components/ui/input/SelectField';
+import { notify } from '@/components/global/Toast';
 
 interface OnboardingModalProps {
   onSuccess: () => void;
@@ -51,8 +52,10 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = () => {
     },
     onSuccess: () => {
       navigate({ to: '/explore' });
+      notify.success("Organization onboarded successfully");
     },
     onError: (error) => {
+      notify.error("Organization onboarding failed");
       console.error("Onboarding error:", error);
      
     }

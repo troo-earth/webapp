@@ -8,6 +8,7 @@ export interface User {
   user_id: string;
   fullname: string;
   email: string;
+  org_id: string;
 }
 
 export interface SelectOption {
@@ -24,4 +25,15 @@ export interface SearchSelectProps {
   placeholder?: string;
   error?: string;
   className?: string;
+}
+
+export interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  children: React.ReactNode;
+  isSaveDisabled?: boolean;
+  onSave?: () => void;       
+  saveLabel?: string;        
+  isLoading?: boolean;      
 }

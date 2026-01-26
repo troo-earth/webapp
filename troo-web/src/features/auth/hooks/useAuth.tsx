@@ -1,20 +1,22 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { logoutApi } from "../api/authApi";
-import { authQueryOptions } from "../query/authQuery";
+import { authQueries } from "../query/authQuery";
+import { notify } from "@/components/global/Toast";
 
 export const useAuth = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate()
 
-  const { data: user, isLoading } = useQuery(authQueryOptions);
+  const { data: user, isLoading } = useQuery(authQueries.me());
 
-  const logout = useMutation({
+  const logoutMutation = useMutation({
     mutationFn: logoutApi,
     onSuccess: async () => {
       navigate({ to: '/login', replace: true });
-      queryClient.setQueryData(authQueryOptions.queryKey, null);
-      queryClient.invalidateQueries({ queryKey: authQueryOptions.queryKey }); 
+      notify.success("Logged out successfully");
+      queryClient.setQueryData(authQueries.me().queryKey, null);
+      queryClient.invalidateQueries({ queryKey: authQueries.me().queryKey }); 
     },
   });
 
@@ -22,7 +24,8 @@ export const useAuth = () => {
     user: user ?? null, 
     isAuthenticated: !!user,
     isLoading,
-    logout: logout.mutate,
+    logout: logoutMutation.mutate,
+    isLogoutPending: logoutMutation.isPending,
   };
 };
 

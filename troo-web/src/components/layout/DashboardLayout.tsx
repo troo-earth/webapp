@@ -1,8 +1,8 @@
 import { Outlet } from '@tanstack/react-router'
-import { Sidebar } from '../global/Sidebar'
 import { motion } from 'framer-motion'
 import BgGradient from '../ui/global/BgGradient'
 import { Header } from '../global/Header'
+import Sidebar from '../global/Sidebar'
 
 const DashboardLayout = () => {
 

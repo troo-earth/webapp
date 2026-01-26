@@ -1,30 +1,30 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { MapPin, ArrowUpRight, Calendar, ShieldCheck } from 'lucide-react';
 import { fallBackUrl, getCountryName, getSDGColor } from '../utils/helpers';
-import type { Project } from '../types/projectTypes';
+import type { Listing } from '../types/listingTypes';
 
 
-export const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
+export const ListingCard: React.FC<{ listing: Listing }> = ({ listing }) => {
 
   const location = useMemo(() => {
-    const countryName = getCountryName(project.country);
-    if (project.state) {
-      return `${project.state}, ${countryName}`;
+    const countryName = getCountryName(listing.country);
+    if (listing.state) {
+      return `${listing.state}, ${countryName}`;
     }
     return countryName;
-  }, [project.country, project.state]);
+  }, [listing.country, listing.state]);
 
   const priceDisplay = useMemo(() => {
-    if (!project.price || project.price <= 0) {
+    if (!listing.price || listing.price <= 0) {
       return { formatted: 'Price TBD', isRange: false };
     }
     return {
-      formatted: `$${project.price.toFixed(2)}`,
+      formatted: `$${listing.price.toFixed(2)}`,
       isRange: false,
     };
-  }, [project.price]);
+  }, [listing.price]);
 
-  const imgSrc = project.imageUrl && !project.imageUrl.includes('placehold') ? project.imageUrl : fallBackUrl;
+  const imgSrc = listing.imageUrl && !listing.imageUrl.includes('placehold') ? listing.imageUrl : fallBackUrl;
   
   return (
         <div
@@ -34,23 +34,23 @@ export const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
           <div className="relative h-40 w-full overflow-hidden shrink-0">
             <img
               src={imgSrc}
-              alt={project.name}
+              alt={listing.name}
               className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out"
             />
         
             <div className="absolute top-3 left-3 flex items-center gap-2 z-10">
                 <div className="flex items-center gap-1.5 bg-white text-gray-900 px-2.5 py-1 rounded-md shadow-sm border border-gray-100/50">
                     <ShieldCheck className="w-3 h-3 text-primary" strokeWidth={3} />
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider">{project.registry}</span>
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider">{listing.registry}</span>
                 </div>
                 <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-md text-gray-600 px-2.5 py-1 rounded-md shadow-sm border border-gray-100/50">
                     <Calendar className="w-3 h-3" />
-                    <span className="text-[10px] font-black">{project.year}</span>
+                    <span className="text-[10px] font-black">{listing.year}</span>
                 </div>
             </div>
             <div className="absolute bottom-3 left-3 z-10">
                  <span className="inline-flex items-center bg-primary text-white text-[10px] font-bold px-2.5 py-1 rounded shadow-lg uppercase tracking-widest">
-                    {project.type}
+                    {listing.type}
                  </span>
             </div>
           </div>
@@ -59,7 +59,7 @@ export const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
             <div>
                 <div className="h-12 mb-1">
                     <h3 className="text-base font-bold text-gray-900 leading-snug group-hover:text-primary transition-colors line-clamp-2">
-                        {project.name}
+                        {listing.name}
                     </h3>
                 </div>
                 <div className="flex items-center text-gray-600 text-xs">
@@ -74,9 +74,9 @@ export const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
         
                 <div className="h-6 w-px bg-gray-200"></div>
                 <div className="flex -space-x-2 overflow-hidden py-0.5 items-center">
-                    {project.sdgGoals && project.sdgGoals.length > 0 ? (
+                    {listing.sdgGoals && listing.sdgGoals.length > 0 ? (
                         <>
-                            {project.sdgGoals.slice(0, 5).map((goal) => (
+                            {listing.sdgGoals.slice(0, 5).map((goal) => (
                                 <div
                                     key={goal}
                                     className={`w-8 h-8 rounded-full border-2 border-white ${getSDGColor(goal)} flex items-center justify-center text-xs font-bold text-white shadow-sm hover:z-10 hover:scale-110 transition-transform cursor-help`}
@@ -85,9 +85,9 @@ export const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
                                     {goal}
                                 </div>
                             ))}
-                            {project.sdgGoals.length > 5 && (
+                            {listing.sdgGoals.length > 5 && (
                                 <div className="w-8 h-8 rounded-full border-2 border-white bg-gray-200 flex items-center justify-center text-[10px] font-bold text-gray-500 z-10">
-                                    +{project.sdgGoals.length - 5}
+                                    +{listing.sdgGoals.length - 5}
                                 </div>
                             )}
                         </>

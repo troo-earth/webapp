@@ -8,7 +8,8 @@ import type { RegisterFormData } from '../../types/authTypes';
 import { registerApi } from '../../api/authApi';
 import { registerSchema } from '../../utils/authSchema';
 import { useNavigate } from '@tanstack/react-router';
-import { authQueryOptions } from '../../query/authQuery';
+import { authQueries } from '../../query/authQuery';
+import { notify } from '@/components/global/Toast';
 
 export const RegisterModal: React.FC<{ onRegisterSuccess?: () => void }> = () => {
 
@@ -28,10 +29,12 @@ export const RegisterModal: React.FC<{ onRegisterSuccess?: () => void }> = () =>
   const mutation = useMutation({
     mutationFn: registerApi,
     onSuccess: (data) => {
-      queryClient.setQueryData(authQueryOptions.queryKey, data);
+      queryClient.setQueryData(authQueries.me().queryKey, data);
+      notify.success("User Registered successfully");
       navigate({ to: '/onboarding', replace: true });
     },
     onError: (error) => {
+      notify.error("Registration failed");
       console.error("Registration Failed:", error);
     }
   });

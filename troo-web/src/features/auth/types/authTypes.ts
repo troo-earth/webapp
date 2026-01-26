@@ -5,6 +5,15 @@ export type LoginFormData = z.infer<typeof loginSchema>;
 export type RegisterFormData = z.infer<typeof registerSchema>;
 export type OnboardingFormData = z.infer<typeof onboardingSchema>;
 
+export interface AuthState {
+  status: 'idle' | 'authenticated' | 'unauthenticated';
+  user_id: string | null;
+  email: string | null;
+  fullname: string | null;
+  org_id: string | null;
+}
+
+
 
 export interface AuthResponse {
   token: string;

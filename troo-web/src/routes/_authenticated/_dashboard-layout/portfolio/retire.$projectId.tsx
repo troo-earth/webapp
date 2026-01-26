@@ -1,4 +1,4 @@
-import RetireCreditsPage from '@/pages/dashboard/project/RetirePage'
+import RetireCreditsPage from '@/pages/dashboard/listing/RetirePage'
 import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute(

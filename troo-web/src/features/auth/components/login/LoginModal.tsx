@@ -8,7 +8,8 @@ import { Button } from '@/components/ui/buttons/Button';
 import type { LoginFormData } from '../../types/authTypes';
 import { loginSchema } from '../../utils/authSchema';
 import { useNavigate } from '@tanstack/react-router';
-import { authQueryOptions } from '../../query/authQuery';
+import { authQueries } from '../../query/authQuery';
+import { notify } from '@/components/global/Toast';
 
 
 interface LoginModalProps {
@@ -19,7 +20,6 @@ export const LoginModal: React.FC<LoginModalProps> = () => {
 
   const navigate = useNavigate()
   const queryClient = useQueryClient();
-  // const router = useRouter();
 
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
@@ -31,10 +31,12 @@ export const LoginModal: React.FC<LoginModalProps> = () => {
   const mutation = useMutation({
     mutationFn: loginApi,
     onSuccess: async (data) => {
-      queryClient.setQueryData(authQueryOptions.queryKey, data);
+      queryClient.setQueryData(authQueries.me().queryKey, data);
+      notify.success("Logged In successfully");
       navigate({to: '/explore', replace: true});
     },
     onError: (error) => {
+      notify.error("Login failed");
       console.error("Login Failed:", error);
     }
   });
