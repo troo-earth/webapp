@@ -4,7 +4,7 @@ import {
   Building2, BadgeCheck, FileSearch, 
   Info, Download, Clock, Globe,
 } from 'lucide-react';
-import { Link, useParams, useSearch } from '@tanstack/react-router';
+import { Link, useNavigate, useParams, useSearch } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { getProjectByIdApi } from '../../../entities/projects/api/projectApi'; 
 import LoadingScreen from '@/components/global/Loading';
@@ -13,6 +13,7 @@ import { fallBackUrl, getCountryName, getSDGColor } from '@/entities/projects/ut
 import useScrollToTopOnNav from '@/hooks/useScrollToTopOnNav';
 
 export const ProjectPage = () => {
+  const navigate = useNavigate();
   const { source, projectId } = useParams({ from: '/_authenticated/_dashboard-layout/$source/project/$projectId_' });
   const { price } = useSearch({ from: '/_authenticated/_dashboard-layout/$source/project/$projectId_' })
 
@@ -31,12 +32,10 @@ export const ProjectPage = () => {
     <div className="min-h-screen font-nunito relative">
       <header className="z-40 transition-all duration-300 p-6">
         <div className="mx-auto flex items-center justify-between">
-          <Link to="/explore">
-              <button className="flex items-center gap-2 text-gray-500 hover:text-primary transition-all cursor-pointer font-bold text-sm group">
-                <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1" />
-                <span>Back to <span className='capitalize'>{source}</span></span>
-              </button>
-          </Link>
+          <button onClick={() => navigate({ to: `/${source}` as any })} className="flex items-center gap-2 text-gray-500 hover:text-primary transition-all cursor-pointer font-bold text-sm group">
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1" />
+            <span>Back to <span className='capitalize'>{source}</span></span>
+          </button>
           
           {project.id && (
             <div className="flex items-center gap-1.5 px-4 py-1.5 bg-gray-50 rounded-full border border-gray-100">

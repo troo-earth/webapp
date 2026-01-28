@@ -18,8 +18,8 @@ export const Button: React.FC<ButtonProps> = ({
   const baseStyles = "relative rounded-full cursor-pointer font-bold transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed";
   
   const variants = {
-    primary: "bg-[#002B2B] text-white hover:bg-[#004242] shadow-sm hover:shadow-[#002B2B]/20 px-8 py-3 text-sm",
-    secondary: "bg-[#5BA49F] text-white hover:bg-[#4a8a86] px-8 py-3 text-sm",
+    primary: "bg-primary text-white hover:bg-[#004242] shadow-sm hover:shadow-[#002B2B]/20 px-8 py-3 text-sm",
+    secondary: "bg-secondary text-white hover:bg-[#4a8a86] px-8 py-3 text-sm",
     outline: "border-2 border-[#002B2B] text-[#002B2B] hover:bg-[#002B2B] hover:text-white px-8 py-3 text-sm",
     ghost: "bg-transparent text-gray-400 hover:text-[#007473] shadow-none hover:bg-transparent px-2 text-xs"
   };

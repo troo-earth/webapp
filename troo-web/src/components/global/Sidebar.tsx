@@ -12,7 +12,7 @@ const Sidebar: React.FC = () => {
   const navItems = [
     { label: 'Explore', icon: <Compass size={18} />, path: '/explore' },
     { label: 'Portfolio', icon: <Briefcase size={18} />, path: '/portfolio' },
-    { label: 'My Listings', icon: <FolderKanban size={18} />, path: '/my-listings' },
+    { label: 'History', icon: <FolderKanban size={18} />, path: '/history' },
     { label: 'Settings', icon: <Settings size={18} />, path: '/settings' },
   ];
 

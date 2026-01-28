@@ -1,118 +1,129 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { 
   Leaf, 
   ArrowUpRight, 
-  Medal
+  BarChart3,
+  ArrowLeftRight,
 } from "lucide-react";
 
-import { PortfolioSummary } from "@/features/my-holdings/components/PortfolioSummary";
-import { AssetCard } from "@/features/my-holdings/components/AssetCard";
-import { RetirementTimelineItem } from "@/features/my-holdings/components/RetirementTimelineItem";
-import type { Holding } from "@/features/my-holdings/types/holdingTypes";
-// import { getMyHoldingsApi } from "@/features/my-holdings/api/myHoldingsApi";
-
-
-
-const getMyHoldingsApi = async (): Promise<Holding[]> => {
-  await new Promise((resolve) => setTimeout(resolve, 800));
-  return [
-    {
-      id: "h1",
-      projectId: "p123",
-      projectName: "Amazonian Rainforest Protection",
-      location: "Pará, Brazil",
-      image: "https://images.unsplash.com/photo-1550989460-0adf9ea622e2?q=80&w=600&auto=format&fit=crop",
-      quantity: 150,
-      vintage: "2023",
-      serialPrefix: "VCU-192-BRA",
-      status: "active",
-      pricePaid: 15.50,
-      impactFact: "Equivalent to 30 passenger vehicles taken off the road for a year."
-    },
-    {
-      id: "h2",
-      projectId: "p456",
-      projectName: "Gujarat Wind Power Project",
-      location: "Gujarat, India",
-      image: "https://images.unsplash.com/photo-1466611653911-95081537e5b7?q=80&w=600&auto=format&fit=crop",
-      quantity: 50,
-      vintage: "2022",
-      serialPrefix: "GS-402-IND",
-      status: "active",
-      pricePaid: 12.00,
-      impactFact: "Provides clean energy for 12 rural households for a month."
-    },
-    {
-      id: "h3",
-      projectId: "p789",
-      projectName: "Sumatra Blue Carbon",
-      location: "Sumatra, Indonesia",
-      image: "https://images.unsplash.com/photo-1583373834259-46cc92173cb7?q=80&w=600&auto=format&fit=crop",
-      quantity: 1000,
-      vintage: "2021",
-      serialPrefix: "VCS-991-IDN",
-      status: "retired",
-      retirementDate: "2024-02-10",
-      pricePaid: 22.00,
-      impactFact: "Restored 2 hectares of critical mangrove ecosystem."
-    },
-    {
-        id: "h4",
-        projectId: "p999",
-        projectName: "Clean Cookstoves Africa",
-        location: "Kenya",
-        image: "https://images.unsplash.com/photo-1532601224476-15c79f2f7a51?q=80&w=600&auto=format&fit=crop",
-        quantity: 250,
-        vintage: "2022",
-        serialPrefix: "GS-101-KEN",
-        status: "retired",
-        retirementDate: "2023-11-05",
-        pricePaid: 9.50,
-        impactFact: "Improved air quality for 50 families."
-      },
-  ];
-};
-
+// Feature Components
+import { PortfolioSummary } from "@/features/portfolio/components/PortfolioSummary";
+import { AssetCard } from "@/features/portfolio/components/AssetCard";
+import type { Portfolio } from "@/features/portfolio/types/portfolioTypes";
+import { TransferSidebarItem } from "@/features/portfolio/components/TransferSidebarItem";
+import { ListingSidebarItem } from "@/features/portfolio/components/ListingSidebarItem";
+import { useListings } from "@/features/listings/hooks/useListings";
+import { getMyHoldingsApi } from "@/features/portfolio/api/myHoldingsApi";
+import { useAuth } from "@/features/auth/hooks/useAuth";
+import LoadingScreen from "@/components/global/Loading";
 
 export const PortfolioPage = () => {
   const queryClient = useQueryClient();
+  const [activeActionId, setActiveActionId] = useState<string | null>(null);
 
-//   const { data: holdings, isLoading } = useQuery({
-//     queryKey: ['my-holdings'],
-//     queryFn: () => getMyHoldingsApi("9114a32f-5b48-4832-9472-c6cda2aeff6c"),
-//   });
+  // Get org_id from auth
+  const { user } = useAuth();
+  const orgId = user?.org_id;
 
-  const { data: holdings } = useQuery({
-    queryKey: ['my-holdings'],
-    queryFn: getMyHoldingsApi,
+  // Fetch holdings from API
+  const { data: holdings, isLoading, error } = useQuery({
+    queryKey: ['my-holdings', orgId],
+    queryFn: () => getMyHoldingsApi(orgId!),
+    enabled: !!orgId,
+    staleTime: 5 * 60 * 1000,
   });
 
+  // Fetch ALL listings (no status filter)
+  const { data: allListings = [], isLoading: listingsLoading } = useListings();
+
+  // Filter for active listings on the client side
+  const activeListings = useMemo(
+    () => allListings.filter(listing => listing.status === 'open'),
+    [allListings]
+  );
+
+  // Action Mutations
   const retireMutation = useMutation({
     mutationFn: async (id: string) => {
-      console.log("Retiring:", id);
-      await new Promise(r => setTimeout(r, 500));
+      setActiveActionId(id);
+      await new Promise(r => setTimeout(r, 1200));
+      // TODO: Add actual retire API call
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-holdings'] });
-      alert("Credits retired! Certificate generated.");
+      setActiveActionId(null);
+    }
+  });
+
+  const listMutation = useMutation({
+    mutationFn: async (id: string) => {
+      setActiveActionId(id);
+      await new Promise(r => setTimeout(r, 1200));
+      // TODO: Add actual list API call
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-holdings'] });
+      queryClient.invalidateQueries({ queryKey: ['listings'] });
+      setActiveActionId(null);
     }
   });
 
   const activeHoldings = useMemo(() => holdings?.filter(h => h.status === 'active') || [], [holdings]);
   const retiredHoldings = useMemo(() => holdings?.filter(h => h.status === 'retired') || [], [holdings]);
-  
+
+  // Mock Active Transfers for Sidebar
+  const activeTransfers = [
+    { id: "TRX-88291", project: "Amazonian Rainforest Protection", recipientOrg: "ECO-VAULT-SOUTH" }
+  ];
+
   const stats = useMemo(() => ({
     total: holdings?.reduce((acc, curr) => acc + curr.quantity, 0) || 0,
     active: activeHoldings.reduce((acc, curr) => acc + curr.quantity, 0),
     retired: retiredHoldings.reduce((acc, curr) => acc + curr.quantity, 0),
   }), [holdings, activeHoldings, retiredHoldings]);
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <LoadingScreen />
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen font-nunito pb-24 bg-gray-50/30">
+        <div className="mx-auto px-4 pt-6 max-w-[1600px]">
+          <div className="p-8 bg-red-50 border border-red-200 rounded-3xl">
+            <p className="text-red-600 text-sm font-medium">
+              {error instanceof Error ? error.message : "Failed to load portfolio"}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // No orgId state
+  if (!orgId) {
+    return (
+      <div className="min-h-screen font-nunito pb-24 bg-gray-50/30">
+        <div className="mx-auto px-4 pt-6 max-w-[1600px]">
+          <div className="p-8 bg-yellow-50 border border-yellow-200 rounded-3xl">
+            <p className="text-yellow-600 text-sm font-medium">
+              Organization ID not found. Please complete onboarding or log in again.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen font-nunito pb-24">
-      <div className="mx-auto px-4 pt-6 ">
+    <div className="min-h-screen font-nunito pb-24 bg-gray-50/30">
+      <div className="mx-auto px-4 pt-6 max-w-[1600px]">
         
         <div className="mb-10">
             <PortfolioSummary total={stats.total} activeCount={stats.active} retiredCount={stats.retired} />
@@ -120,67 +131,120 @@ export const PortfolioPage = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
             
+            {/* LEFT: MAIN ASSETS */}
             <div className="lg:col-span-8">
                 <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-extrabold text-gray-900 flex items-center gap-2">
+                    <h2 className="text-xl font-extrabold text-[#002B2B] flex items-center gap-2">
                         Active Assets
-                        <span className="bg-gray-200 text-gray-600 text-xs py-0.5 px-2 rounded-full">{activeHoldings.length}</span>
+                        <span className="bg-[#5BA49F]/10 text-[#5BA49F] text-xs py-0.5 px-2 rounded-full">{activeHoldings.length}</span>
                     </h2>
-                    <Link to="/explore" className="text-sm font-bold text-primary hover:text-secondary flex items-center gap-1">
-                        Buy Credits <ArrowUpRight size={16} />
+                    <Link to="/explore" className="text-sm font-bold text-[#5BA49F] hover:text-[#002B2B] flex items-center gap-1 transition-colors">
+                        Explore Market <ArrowUpRight size={16} />
                     </Link>
                 </div>
                 
                 <div className="space-y-6">
                     {activeHoldings.length === 0 ? (
-                        <div className="text-center py-16 bg-white rounded-4xl border border-dashed border-gray-200">
-                            <Leaf className="mx-auto text-gray-300 mb-3" size={48} />
-                            <p className="text-gray-400 font-medium">Your active portfolio is empty.</p>
+                        <div className="text-center py-20 bg-white rounded-[3rem] border border-dashed border-gray-200">
+                            <Leaf className="mx-auto text-gray-200 mb-4" size={48} />
+                            <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">Portfolio Empty</p>
                         </div>
                     ) : (
                         activeHoldings.map(h => (
-                            <AssetCard key={h.id} holding={h} onRetire={(id) => retireMutation.mutate(id)} />
+                            <AssetCard 
+                              key={h.id} 
+                              holding={h} 
+                              onRetire={(id) => retireMutation.mutate(id)}
+                              onList={(id) => listMutation.mutate(id)}
+                              onTransfer={(id) => console.log("Transferring:", id)}
+                              isRetiring={retireMutation.isPending && activeActionId === h.id}
+                              isListing={listMutation.isPending && activeActionId === h.id}
+                            />
                         ))
                     )}
                 </div>
             </div>
 
-            <div className="lg:col-span-4">
-                <div className="bg-white rounded-4xl p-6 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] border border-gray-100 sticky top-6">
-                    <div className="flex items-center gap-2 mb-6 border-b border-gray-50 pb-4">
-                        <div className="bg-yellow-50 p-2 rounded-lg">
-                            <Medal size={20} className="text-accent" />
+            {/* RIGHT: ACTIVITY SIDEBARS */}
+            <div className="lg:col-span-4 space-y-8">
+                
+                {/* 1. Market Activity Sidebar */}
+               <div className="bg-white rounded-[2.5rem] p-6 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] border border-gray-100">
+    <div className="flex items-center gap-3 mb-6 border-b border-gray-50 pb-5">
+        <div className="bg-[#5BA49F]/10 p-2.5 rounded-xl">
+            <BarChart3 size={20} className="text-[#5BA49F]" />
+        </div>
+        <div>
+            <h2 className="text-lg font-black text-[#002B2B] tracking-tight">Active Listings</h2>
+            <p className="text-[10px] text-gray-400 font-medium mt-0.5">
+              {activeListings.length} active • {allListings.length} total
+            </p>
+        </div>
+    </div>
+
+    <div className="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+        {listingsLoading ? (
+            <p className="text-sm text-gray-400 text-center py-10 font-medium italic">Loading...</p>
+        ) : allListings.length === 0 ? (
+             <p className="text-sm text-gray-400 text-center py-10 font-medium italic">No listings yet.</p>
+        ) : activeListings.length === 0 ? (
+             <p className="text-sm text-gray-400 text-center py-10 font-medium italic">
+               No active listings. 
+               <br />
+               <span className="text-xs">({allListings.length} closed)</span>
+             </p>
+        ) : (
+            activeListings.slice(-4).map((listing, index, arr) => (
+                <ListingSidebarItem 
+                  key={listing.id} 
+                  listing={listing} 
+                  isLast={index === arr.length - 1} 
+                />
+            ))
+        )}
+    </div>
+    
+    <div className="mt-6 pt-5 border-t border-gray-50">
+        <Link to="/listings" className="w-full flex items-center justify-center gap-2 py-3 bg-gray-50 rounded-2xl text-[10px] font-black text-gray-400 uppercase tracking-widest hover:bg-[#002B2B] hover:text-white transition-all">
+            View All {activeListings.length} Active Listings
+        </Link>
+    </div>
+</div>
+
+                {/* 2. Active Transfers Sidebar 
+                <div className="bg-white rounded-[2.5rem] p-6 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] border border-gray-100">
+                    <div className="flex items-center gap-3 mb-6 border-b border-gray-50 pb-5">
+                        <div className="bg-primary/10 p-2.5 rounded-xl text-primary">
+                            <ArrowLeftRight size={20} />
                         </div>
                         <div>
-                            <h2 className="text-lg font-bold text-gray-900">Impact Legacy</h2>
-                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Verified Retirements</p>
+                            <h2 className="text-lg font-black text-[#002B2B] tracking-tight">Active Transfers</h2>
+                            <p className="text-[10px] text-gray-400 font-medium mt-0.5">
+                              {activeTransfers.length} {activeTransfers.length === 1 ? 'transfer' : 'transfers'}
+                            </p>
                         </div>
                     </div>
 
-                    <div className="max-h-150 overflow-y-auto pr-2 custom-scrollbar">
-                        {retiredHoldings.length === 0 ? (
-                             <p className="text-sm text-gray-400 text-center py-8">No retirements recorded yet.</p>
+                    <div className="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                        {activeTransfers.length === 0 ? (
+                             <p className="text-sm text-gray-400 text-center py-10 font-medium italic">No active transfers.</p>
                         ) : (
-                            retiredHoldings.map((h, index) => (
-                                <RetirementTimelineItem 
-                                    key={h.id} 
-                                    holding={h} 
-                                    isLast={index === retiredHoldings.length - 1} 
-                                />
+                            activeTransfers.map((t, index) => (
+                                <TransferSidebarItem key={t.id} transfer={t} isLast={index === activeTransfers.length - 1} />
                             ))
                         )}
                     </div>
                     
-                    <div className="mt-4 pt-4 border-t border-gray-50 text-center">
-                        <Link to="/portfolio/retirements" className="text-xs font-bold text-gray-400 hover:text-primary transition-colors">
-                            View All Retirements
+                    <div className="mt-6 pt-5 border-t border-gray-50">
+                        <Link to="/portfolio/transactions" className="w-full flex items-center justify-center gap-2 py-3 bg-gray-50 rounded-2xl text-[10px] font-black text-gray-400 uppercase tracking-widest hover:bg-primary hover:text-white transition-all">
+                            Open Transaction Manager
                         </Link>
                     </div>
                 </div>
+ */}
             </div>
 
         </div>
-
       </div>
     </div>
   );
