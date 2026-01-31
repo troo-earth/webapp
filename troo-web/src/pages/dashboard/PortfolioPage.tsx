@@ -5,14 +5,11 @@ import {
   Leaf, 
   ArrowUpRight, 
   BarChart3,
-  ArrowLeftRight,
 } from "lucide-react";
 
 // Feature Components
 import { PortfolioSummary } from "@/features/portfolio/components/PortfolioSummary";
 import { AssetCard } from "@/features/portfolio/components/AssetCard";
-import type { Portfolio } from "@/features/portfolio/types/portfolioTypes";
-import { TransferSidebarItem } from "@/features/portfolio/components/TransferSidebarItem";
 import { ListingSidebarItem } from "@/features/portfolio/components/ListingSidebarItem";
 import { useListings } from "@/features/listings/hooks/useListings";
 import { getMyHoldingsApi } from "@/features/portfolio/api/myHoldingsApi";
@@ -30,7 +27,7 @@ export const PortfolioPage = () => {
   // Fetch holdings from API
   const { data: holdings, isLoading, error } = useQuery({
     queryKey: ['my-holdings', orgId],
-    queryFn: () => getMyHoldingsApi(orgId!),
+    queryFn: () => getMyHoldingsApi(),
     enabled: !!orgId,
     staleTime: 5 * 60 * 1000,
   });
@@ -39,10 +36,7 @@ export const PortfolioPage = () => {
   const { data: allListings = [], isLoading: listingsLoading } = useListings();
 
   // Filter for active listings on the client side
-  const activeListings = useMemo(
-    () => allListings.filter(listing => listing.status === 'open'),
-    [allListings]
-  );
+  const activeListings = allListings;
 
   // Action Mutations
   const retireMutation = useMutation({
@@ -73,15 +67,10 @@ export const PortfolioPage = () => {
   const activeHoldings = useMemo(() => holdings?.filter(h => h.status === 'active') || [], [holdings]);
   const retiredHoldings = useMemo(() => holdings?.filter(h => h.status === 'retired') || [], [holdings]);
 
-  // Mock Active Transfers for Sidebar
-  const activeTransfers = [
-    { id: "TRX-88291", project: "Amazonian Rainforest Protection", recipientOrg: "ECO-VAULT-SOUTH" }
-  ];
-
+ 
   const stats = useMemo(() => ({
     total: holdings?.reduce((acc, curr) => acc + curr.quantity, 0) || 0,
     active: activeHoldings.reduce((acc, curr) => acc + curr.quantity, 0),
-    retired: retiredHoldings.reduce((acc, curr) => acc + curr.quantity, 0),
   }), [holdings, activeHoldings, retiredHoldings]);
 
   // Loading state
@@ -126,7 +115,7 @@ export const PortfolioPage = () => {
       <div className="mx-auto px-4 pt-6 max-w-[1600px]">
         
         <div className="mb-10">
-            <PortfolioSummary total={stats.total} activeCount={stats.active} retiredCount={stats.retired} />
+            <PortfolioSummary total={stats.total} activeCount={stats.active}  />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">

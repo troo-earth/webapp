@@ -1,29 +1,35 @@
-import type { User } from '@/types/global/types';
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import type { AuthState } from '../types/authTypes';
 
-
-
-interface AuthState {
-  status: 'idle' | 'authenticated' | 'unauthenticated';
-  user: User | null;
-}
 
 const initialState: AuthState = {
   status: 'idle',
-  user: null,
+  user_id: null,
+  email: null,
+  fullname: null,
+  org_id: null,
 };
 
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    setAuth: (state, action: PayloadAction<User>) => {
+    setAuth: (
+      state, 
+      action: PayloadAction<{ user_id: string; email: string; fullname: string; org_id: string }>
+    ) => {
       state.status = 'authenticated';
-      state.user = action.payload;
+      state.user_id = action.payload.user_id;
+      state.email = action.payload.email;
+      state.fullname = action.payload.fullname;
+      state.org_id = action.payload.org_id;
     },
     clearAuth: (state) => {
       state.status = 'unauthenticated';
-      state.user = null;
+      state.user_id = null;
+      state.email = null;
+      state.fullname = null;
+      state.org_id = null;
     },
   },
 });

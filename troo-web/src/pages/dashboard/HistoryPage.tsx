@@ -32,7 +32,7 @@ export const HistoryPage = () => {
   // Fetch history data based on active tab
   const { data: historyItems = [], isLoading, error } = useQuery({
     queryKey: ['history', activeTab, orgId],
-    queryFn: () => getHistoryApi(activeTab, orgId!),
+    queryFn: () => getHistoryApi(activeTab),
     enabled: !!orgId, // Only run query if orgId exists
     staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
   });

@@ -8,13 +8,35 @@ const Header: React.FC = () => {
   const { user } = useAuth()
 
   const getTitle = () => {
-    const pathname = location.pathname;
-    if (pathname.includes('project')) {
-      return 'Project Details';
-    }
-    const path = location.pathname.split('/').pop() || 'Dashboard';
-    return path.replace(/-/g, ' ');
+  const pathname = location.pathname;
+  
+  // Route patterns mapping
+  const routeTitles: Record<string, string> = {
+    '/listing/': 'Listing Details',
+    '/project/': 'Project Details',
+    '/retire/': 'Retire Credits',
+    '/transfer/': 'Transfer Credits',
+    '/list/': 'List for Sale',
+    '/transactions': 'Transactions',
+    '/history': 'History',
+    '/settings': 'Settings',
+    '/explore': 'Explore',
+    '/portfolio': 'Portfolio',
+    '/marketplace': 'Marketplace',
+    '/listings': 'Listings',
   };
+  
+  // Check for matches
+  for (const [route, title] of Object.entries(routeTitles)) {
+    if (pathname.includes(route)) {
+      return title;
+    }
+  }
+  
+  // Default fallback
+  const path = pathname.split('/').pop() || 'Dashboard';
+  return path.replace(/-/g, ' ');
+};
 
   const getInitials = (name?: string) => {
     if (!name) return 'GU';

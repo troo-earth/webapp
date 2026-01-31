@@ -6,7 +6,6 @@ import {
   Download,
   ShieldCheck,
   User,
-  Building2,
 } from "lucide-react";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
@@ -61,16 +60,28 @@ export const HistoryCard = ({ item, type }: HistoryCardProps) => {
   const config = {
     retirement: {
       icon: <Award size={18} />,
-      color: "text-green-600",
+      color: "text-green-900/80",
       bgColor: "bg-green-50/50",
       label: "Retired Asset",
-      accent: "bg-green-600",
+      accent: "bg-green-900/70",
     },
     sell: {
       icon: <Tag size={18} />,
       color: "text-[#5BA49F]",
       bgColor: "bg-[#5BA49F]/10",
-      label: item.status === "closed" ? "Finalized Sale" : "Market Listing",
+      label: item.eventType
+        ? item.eventType === "CREATED"
+          ? "Listing Created"
+          : item.eventType === "CANCELLED"
+            ? "Listing Cancelled"
+            : item.eventType === "UPDATED"
+              ? "Listing Updated"
+              : item.eventType === "PARTIALLY_FILLED"
+                ? "Partially Sold"
+                : "Market Listing"
+        : item.status === "closed"
+          ? "Finalized Sale"
+          : "Market Listing",
       accent: "bg-[#5BA49F]",
     },
     transfer: {
@@ -81,7 +92,6 @@ export const HistoryCard = ({ item, type }: HistoryCardProps) => {
       accent: "bg-[#002B2B]",
     },
   }[type];
-
   return (
     <div className="group relative w-full bg-white rounded-[2.5rem] p-7 border border-gray-100 hover:border-primary/30 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.08)] transition-all duration-500 overflow-hidden hover:-translate-y-2">
       {/* Visual Status Indicator */}
@@ -133,21 +143,19 @@ export const HistoryCard = ({ item, type }: HistoryCardProps) => {
               </span>
             </div>
 
+            {/* Show event description for sell type */}
+            {type === "sell" && item.eventDescription && (
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50/30 rounded-xl border border-blue-100/50 text-xs text-gray-600 font-bold">
+                <span>{item.eventDescription}</span>
+              </div>
+            )}
+
             {type === "retirement" && item.beneficiary && (
               <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50/30 rounded-xl border border-green-100/50 text-xs text-gray-500 font-bold uppercase tracking-tight">
                 <User size={14} className="opacity-40 text-green-600" />
                 <span>
                   Beneficiary:{" "}
                   <span className="text-gray-700">{item.beneficiary}</span>
-                </span>
-              </div>
-            )}
-
-            {type === "sell" && item.buyer && (
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-[#5BA49F]/5 rounded-xl border border-[#5BA49F]/10 text-xs text-gray-500 font-bold uppercase tracking-tight">
-                <Building2 size={14} className="opacity-40 text-[#5BA49F]" />
-                <span>
-                  Buyer: <span className="text-gray-700">{item.buyer}</span>
                 </span>
               </div>
             )}
@@ -176,7 +184,8 @@ export const HistoryCard = ({ item, type }: HistoryCardProps) => {
                 tCO2e
               </span>
             </div>
-            {item.pricePerUnit && (
+            {/* Only show price if pricePerUnit exists and is greater than 0 */}
+            {item.pricePerUnit > 0 && (
               <div className="flex items-center gap-2 mt-2 bg-primary/5 px-2 py-1 rounded-lg">
                 <p className="text-xs font-black text-primary">
                   $

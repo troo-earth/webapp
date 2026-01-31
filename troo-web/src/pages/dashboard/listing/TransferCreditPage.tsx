@@ -6,6 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { getMyHoldingsApi } from '@/features/portfolio/api/myHoldingsApi';
 import { transferCreditsApi } from '@/features/portfolio-actions/api/transferCreditsApi';
+import { ActionModal } from '@/components/ui/modal/ActionModal';
 import { toast } from 'sonner';
 import LoadingScreen from '@/components/global/Loading';
 
@@ -17,35 +18,76 @@ const TransferCreditsPage = () => {
   const queryClient = useQueryClient();
   
   const [transferAmount, setTransferAmount] = useState(0);
-  const [recipientOrgCode, setRecipientOrgCode] = useState(''); // Changed from recipientOrg
+  const [inputValue, setInputValue] = useState<string>('');
+  const [recipientOrgCode, setRecipientOrgCode] = useState('');
+  
+  // Unified Modal State
+  const [modalState, setModalState] = useState<{
+    isOpen: boolean;
+    type: 'success' | 'error';
+    title: string;
+    message: string;
+    data?: any;
+  }>({
+    isOpen: false,
+    type: 'success',
+    title: '',
+    message: '',
+    data: null
+  });
   
   // Fetch holdings to get the specific holding with available quantity
   const { data: holdings, isLoading: holdingsLoading } = useQuery({
     queryKey: ['my-holdings', orgId],
-    queryFn: () => getMyHoldingsApi(orgId!),
+    queryFn: () => getMyHoldingsApi(),
     enabled: !!orgId,
   });
 
   // Transfer mutation
   const transferMutation = useMutation({
     mutationFn: transferCreditsApi,
-    onSuccess: (data) => {
-      toast.success('Credits transferred successfully!');
+    onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ['my-holdings'] });
-      navigate({ to: '/portfolio' });
+      queryClient.invalidateQueries({ queryKey: ['history'] });
+      queryClient.invalidateQueries({ queryKey: ['history', 'transfer'] });
+      
+      // Show success modal
+      setModalState({
+        isOpen: true,
+        type: 'success',
+        title: 'Transfer Complete',
+        message: `You have successfully transferred <span class="text-primary font-bold">${transferAmount} tCO2e</span> to <span class="text-primary font-bold">${recipientOrgCode}</span>.`,
+        data: response.data
+      });
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to transfer credits');
+      setModalState({
+        isOpen: true,
+        type: 'error',
+        title: 'Transfer Failed',
+        message: error.message || 'Failed to transfer credits. Please try again.',
+        data: null
+      });
     },
   });
+
+  const handleCloseModal = () => {
+    setModalState(prev => ({ ...prev, isOpen: false }));
+    if (modalState.type === 'success') {
+      navigate({ to: '/portfolio' });
+    }
+  };
+
+  const handleRetry = () => {
+    setModalState(prev => ({ ...prev, isOpen: false }));
+    handleTransfer();
+  };
 
   // Find the specific holding for this project
   const holding = holdings?.find(h => h.projectId === projectId);
 
   if (holdingsLoading) {
-    return (
-      <LoadingScreen />
-    );
+    return <LoadingScreen />;
   }
 
   if (!holding || !orgId) {
@@ -77,27 +119,43 @@ const TransferCreditsPage = () => {
 
   const maxTransfer = project.availableQuantity;
 
-  // Helper to handle manual typing and enforce limits
+  // Helper to handle manual typing and enforce limits - now with decimal support
   const handleManualInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^0-9]/g, ''); 
-    const numValue = value === '' ? 0 : Number(value);
+    const value = e.target.value;
 
-    if (numValue > maxTransfer) {
-      setTransferAmount(maxTransfer);
-    } else {
-      setTransferAmount(numValue);
+    // Allow empty string, digits, decimal point, and up to 2 decimal places
+    if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
+      setInputValue(value);
+      
+      if (value === '' || value === '.') {
+        setTransferAmount(0);
+        return;
+      }
+
+      const numValue = parseFloat(value);
+
+      if (numValue > maxTransfer) {
+        setTransferAmount(maxTransfer);
+        setInputValue(maxTransfer.toString());
+      } else {
+        setTransferAmount(numValue);
+      }
     }
   };
 
   // Handle slider change
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setTransferAmount(Number(e.target.value));
+    const value = Number(e.target.value);
+    setTransferAmount(value);
+    setInputValue(value.toString());
   };
 
   // Handle percentage buttons
   const handlePercentage = (percent: number) => {
     const amount = Math.floor((maxTransfer * percent) / 100);
-    setTransferAmount(amount);
+    const formattedAmount = parseFloat(amount.toFixed(2));
+    setTransferAmount(formattedAmount);
+    setInputValue(formattedAmount.toString());
   };
 
   // Handle transfer submission
@@ -108,12 +166,6 @@ const TransferCreditsPage = () => {
       return;
     }
 
-    console.log('Transfer payload:', {
-      to_org_code: recipientOrgCode.trim().toUpperCase(),
-      project_id: projectId,
-      amount: transferAmount,
-    });
-
     transferMutation.mutate({
       to_org_code: recipientOrgCode.trim().toUpperCase(),
       project_id: projectId,
@@ -123,25 +175,29 @@ const TransferCreditsPage = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-gray-50/30">
+      {/* ACTION MODAL */}
+      <ActionModal 
+        isOpen={modalState.isOpen}
+        onClose={handleCloseModal}
+        type={modalState.type}
+        title={modalState.title}
+        message={modalState.message}
+        data={modalState.data}
+        onRetry={handleRetry}
+        showDownloadButton={false}
+      />
+
       <div className="mx-auto relative z-10">
         <header className="p-4 pt-6">
           <div className="mx-auto flex items-center justify-between">
-            <Link to="/portfolio">
-              <button className="flex items-center gap-2 text-gray-400 hover:text-primary transition-all font-bold text-sm cursor-pointer group">
-                <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                <span>Back to Portfolio</span>
-              </button>
+            <Link to="/portfolio" className="flex items-center gap-2 text-gray-400 hover:text-primary transition-all font-bold text-sm cursor-pointer group">
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+              <span>Back to Portfolio</span>
             </Link>
           </div>
         </header>
 
         <div className='p-6'>
-          <div className="mb-8">
-            <h1 className="text-4xl font-black text-[#0F1F1F] tracking-tight">
-              Transfer <span className="text-primary">Credits</span>
-            </h1>
-            <p className="text-gray-500 font-medium mt-2">Move environmental assets securely to another organization or registry.</p>
-          </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             {/* LEFT: Project Details Card */}
@@ -206,14 +262,17 @@ const TransferCreditsPage = () => {
                     <div className="relative group">
                       <input
                         type="text"
-                        inputMode="numeric"
-                        value={transferAmount === 0 ? '' : transferAmount.toLocaleString()}
+                        inputMode="decimal"
+                        value={inputValue}
                         onChange={handleManualInput}
                         className="w-full bg-transparent text-5xl sm:text-7xl font-black text-[#0F1F1F] border-none focus:ring-0 p-0 placeholder:text-gray-200 transition-all outline-none"
                         placeholder="0"
                       />
                       <span className="absolute right-0 bottom-3 text-[10px] font-black text-gray-300 uppercase tracking-widest pointer-events-none">
-                        {project.unit} • Available: {project.availableQuantity.toLocaleString()}
+                        {project.unit} • Max: {project.availableQuantity.toLocaleString(undefined, {
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: 2,
+                        })}
                       </span>
                     </div>
 
@@ -223,7 +282,7 @@ const TransferCreditsPage = () => {
                         type="range"
                         min="0"
                         max={maxTransfer}
-                        step="1"
+                        step="0.01"
                         value={transferAmount}
                         onChange={handleSliderChange}
                         className="w-full h-1.5 bg-gray-200/50 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:cursor-pointer"
@@ -273,7 +332,7 @@ const TransferCreditsPage = () => {
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">To be Transferred</p>
                     <p className="text-xl font-black text-primary flex items-center gap-2">
                       <ArrowLeftRight size={18} />
-                      {transferAmount.toLocaleString()} <span className="text-xs font-medium opacity-60 uppercase">{project.unit}</span>
+                      {transferAmount.toFixed(2)} <span className="text-xs font-medium opacity-60 uppercase">{project.unit}</span>
                     </p>
                   </div>
                   

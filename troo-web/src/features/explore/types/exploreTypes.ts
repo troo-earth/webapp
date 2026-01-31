@@ -1,4 +1,4 @@
-import type { Project } from "@/entities/projects/types/projectTypes";
+import type { Project } from "@/entities/listings/types/listingTypes";
 
   export type FactCardType = {
     id: string;

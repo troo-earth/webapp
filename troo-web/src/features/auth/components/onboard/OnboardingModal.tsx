@@ -3,13 +3,11 @@ import { ArrowRight, UploadCloud, ImagePlus, Building2, FileCheck, X} from 'luci
 import BgGradient from '@/components/ui/global/BgGradient';
 import { Button } from '@/components/ui/buttons/Button';
 import { InputField } from '@/components/ui/input/InputField';
-import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { onboardingApi, uploadLogoApi, uploadProofApi } from '../../api/authApi';
-import type { OnboardingPayload } from '../../types/authTypes';
 import { onboardingSchema } from '../../utils/authSchema';
 import { COUNTRY_OPTIONS } from '@/lib/constants';
 import { SelectField } from '@/components/ui/input/SelectField';
+import { useOnboarding } from '../../hooks/useAuthMutations';
 
 interface OnboardingModalProps {
   onSuccess: () => void;
@@ -18,7 +16,7 @@ interface OnboardingModalProps {
 export const OnboardingModal: React.FC<OnboardingModalProps> = () => {
 
   const navigate = useNavigate();
-  // const queryClient = useQueryClient();
+  const { mutate, isPending } = useOnboarding();
 
   const [formData, setFormData] = useState({
     companyName: '',
@@ -28,35 +26,6 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = () => {
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
-
-  const { mutate, isPending } = useMutation({
-    mutationFn: async () => {
-      if (!logoFile || !proofFile) throw new Error("Files are missing");
-
-
-      const [logoUrl, proofUrl] = await Promise.all([
-        uploadLogoApi(logoFile),
-        uploadProofApi(proofFile)
-      ]);
-
-      const finalPayload: OnboardingPayload = {
-        org_name: formData.companyName,
-        country_code: formData.countryCode,
-        registration_id: formData.registrationId,
-        logo_url: logoUrl,
-        incorporation_doc_url: proofUrl
-      };
-
-      return await onboardingApi(finalPayload);
-    },
-    onSuccess: () => {
-      navigate({ to: '/explore' });
-    },
-    onError: (error) => {
-      console.error("Onboarding error:", error);
-     
-    }
-  });
 
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -80,15 +49,15 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = () => {
       return;
     }
 
-    const data = new FormData();
-    data.append('companyName', result.data.companyName);
-    data.append('countryCode', result.data.countryCode);
-    data.append('registrationId', result.data.registrationId);
-    data.append('logo', result.data.logo);
-    data.append('proof', result.data.proof);
-    console.log("Submitting onboarding with data:", result.data);
-
-    mutate();
+    mutate({
+    formData: {
+      companyName: result.data.companyName,
+      countryCode: result.data.countryCode,
+      registrationId: result.data.registrationId,
+    },
+    logoFile: result.data.logo,
+    proofFile: result.data.proof 
+  });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'logo' | 'proof') => {

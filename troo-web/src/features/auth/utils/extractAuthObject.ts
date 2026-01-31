@@ -18,5 +18,6 @@ export const extractRegisterAuthObject = (response: any) : User => {
       user_id: userInfo?.user_id,
       email: userInfo?.email,
       fullname: userInfo?.fullname,
+      org_id: userInfo?.org_id,
     }
 };

@@ -1,4 +1,5 @@
 import { CheckCircle2, XCircle, X, Download } from 'lucide-react';
+import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/buttons/Button';
 
 type ModalType = 'success' | 'error';
@@ -51,9 +52,12 @@ export const ActionModal = ({
     }
   }[type];
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div className="absolute inset-0  backdrop-blur-md" onClick={onClose} />
+  return createPortal(
+    <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
+      <div 
+        className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity animate-in fade-in duration-300" 
+        onClick={onClose} 
+      />
       <div className="relative bg-white rounded-[2.5rem] w-full max-w-lg overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-300">
         {/* Close Button */}
         <div className="absolute top-6 right-6">
@@ -130,6 +134,7 @@ export const ActionModal = ({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

@@ -26,3 +26,14 @@ export interface SearchSelectProps {
   error?: string;
   className?: string;
 }
+
+export interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  children: React.ReactNode;
+  isSaveDisabled?: boolean;
+  onSave?: () => void;       
+  saveLabel?: string;        
+  isLoading?: boolean;      
+}

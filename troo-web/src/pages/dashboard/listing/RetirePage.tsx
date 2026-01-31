@@ -21,6 +21,7 @@ const RetireCreditsPage = () => {
   const queryClient = useQueryClient();
   
   const [retireAmount, setRetireAmount] = useState(0);
+  const [inputValue, setInputValue] = useState<string>('');
   const [beneficiary, setBeneficiary] = useState('');
   const [purpose, setPurpose] = useState('');
   
@@ -41,7 +42,7 @@ const RetireCreditsPage = () => {
 
   const { data: holdings, isLoading: holdingsLoading } = useQuery({
     queryKey: ['my-holdings', orgId],
-    queryFn: () => getMyHoldingsApi(orgId!),
+    queryFn: () => getMyHoldingsApi(),
     enabled: !!orgId,
   });
 
@@ -49,6 +50,8 @@ const RetireCreditsPage = () => {
     mutationFn: retireCreditsApi,
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ['my-holdings'] });
+      queryClient.invalidateQueries({ queryKey: ['history'] });
+      queryClient.invalidateQueries({ queryKey: ['history', 'retirement'] });
       setModalState({
         isOpen: true,
         type: 'success',
@@ -136,18 +139,39 @@ const RetireCreditsPage = () => {
   const impactScore = (retireAmount * 1.2).toFixed(1);
 
   const handleManualInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^0-9]/g, '');
-    const numValue = value === '' ? 0 : Number(value);
-    numValue > maxRetire ? setRetireAmount(maxRetire) : setRetireAmount(numValue);
+    const value = e.target.value;
+
+    // Allow empty string, digits, decimal point, and up to 2 decimal places
+    if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
+      setInputValue(value);
+      
+      if (value === '' || value === '.') {
+        setRetireAmount(0);
+        return;
+      }
+
+      const numValue = parseFloat(value);
+
+      if (numValue > maxRetire) {
+        setRetireAmount(maxRetire);
+        setInputValue(maxRetire.toString());
+      } else {
+        setRetireAmount(numValue);
+      }
+    }
   };
 
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setRetireAmount(Number(e.target.value));
+    const value = Number(e.target.value);
+    setRetireAmount(value);
+    setInputValue(value.toString());
   };
 
   const handlePercentage = (percent: number) => {
     const amount = Math.floor((maxRetire * percent) / 100);
-    setRetireAmount(amount);
+    const formattedAmount = parseFloat(amount.toFixed(2));
+    setRetireAmount(formattedAmount);
+    setInputValue(formattedAmount.toString());
   };
 
   const handleRetire = () => {
@@ -187,13 +211,6 @@ const RetireCreditsPage = () => {
         </header>
 
         <div className='p-6'>
-          <div className="mb-8">
-            <h1 className="text-4xl font-black text-[#0F1F1F] tracking-tight">
-              Retire <span className="text-primary">Credits</span>
-            </h1>
-            <p className="text-gray-500 font-medium mt-2">Permanently remove carbon credits from circulation to claim your impact.</p>
-          </div>
-
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             {/* LEFT: Project Details Card */}
             <div className="lg:col-span-5">
@@ -253,26 +270,38 @@ const RetireCreditsPage = () => {
                     <div className="relative group">
                       <input
                         type="text"
-                        inputMode="numeric"
-                        value={retireAmount === 0 ? '' : retireAmount.toLocaleString()}
+                        inputMode="decimal"
+                        value={inputValue}
                         onChange={handleManualInput}
                         className="w-full bg-transparent text-5xl sm:text-7xl font-black text-[#0F1F1F] border-none focus:ring-0 p-0 placeholder:text-gray-200 outline-none"
                         placeholder="0"
                       />
                       <span className="absolute right-0 bottom-3 text-[10px] font-black text-gray-300 uppercase tracking-widest pointer-events-none">
-                        {project.unit} • Available: {project.availableQuantity.toLocaleString()}
+                        {project.unit} • Max: {project.availableQuantity.toLocaleString(undefined, {
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: 2,
+                        })}
                       </span>
                     </div>
 
                     <div className="relative py-2">
                       <input
-                        type="range" min="0" max={maxRetire} step="1" value={retireAmount} onChange={handleSliderChange}
-                        className="w-full h-1.5 bg-gray-200/50 rounded-full appearance-none cursor-pointer"
-                        style={{ background: `linear-gradient(to right, #5BA49F 0%, #5BA49F ${(retireAmount / maxRetire) * 100}%, rgb(229 231 235 / 0.5) 0%)` }}
+                        type="range" 
+                        min="0" 
+                        max={maxRetire} 
+                        step="0.01" 
+                        value={retireAmount} 
+                        onChange={handleSliderChange}
+                        className="w-full h-1.5 bg-gray-200/50 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:cursor-pointer"
+                        style={{ background: `linear-gradient(to right, #5BA49F 0%, #5BA49F ${(retireAmount / maxRetire) * 100}%, rgb(229 231 235 / 0.5) ${(retireAmount / maxRetire) * 100}%, rgb(229 231 235 / 0.5) 100%)` }}
                       />
                       <div className="flex justify-between mt-4 px-1">
                         {[0, 25, 50, 75, 100].map((percent) => (
-                          <button key={percent} onClick={() => handlePercentage(percent)} className={`text-[9px] font-bold uppercase tracking-tighter ${Math.abs((retireAmount / maxRetire) * 100 - percent) < 2 ? 'text-primary' : 'text-gray-400'}`}>
+                          <button 
+                            key={percent} 
+                            onClick={() => handlePercentage(percent)} 
+                            className={`text-[9px] font-bold uppercase tracking-tighter transition-colors ${Math.abs((retireAmount / maxRetire) * 100 - percent) < 2 ? 'text-primary' : 'text-gray-400 hover:text-primary'}`}
+                          >
                             {percent}%
                           </button>
                         ))}
@@ -316,7 +345,7 @@ const RetireCreditsPage = () => {
                 <div className="mt-auto pt-10 border-t border-gray-100/50 flex flex-col sm:flex-row items-center gap-4">
                   <div className="flex-1">
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total Selection</p>
-                    <p className="text-xl font-black text-primary">{retireAmount.toLocaleString()} <span className="text-xs font-medium opacity-60 uppercase">{project.unit}</span></p>
+                    <p className="text-xl font-black text-primary">{retireAmount.toFixed(2)} <span className="text-xs font-medium opacity-60 uppercase">{project.unit}</span></p>
                   </div>
                   <div className="flex items-center gap-3 w-full sm:w-auto">
                     <button className="p-4 rounded-2xl bg-white/80 border border-gray-100 text-gray-400 hover:text-primary transition-all"><Info size={20} /></button>

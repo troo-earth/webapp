@@ -1,19 +1,18 @@
 import React, { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowRight, AlertCircle } from 'lucide-react';
 import { InputField } from '../../../../components/ui/input/InputField';
 import { Button } from '../../../../components/ui/buttons/Button';
 import BgGradient from '@/components/ui/global/BgGradient';
 import type { RegisterFormData } from '../../types/authTypes';
-import { registerApi } from '../../api/authApi';
 import { registerSchema } from '../../utils/authSchema';
 import { useNavigate } from '@tanstack/react-router';
-import { authQueryOptions } from '../../query/authQuery';
+import { useRegister } from '../../hooks/useAuthMutations';
 
 export const RegisterModal: React.FC<{ onRegisterSuccess?: () => void }> = () => {
 
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
+
+  const { mutate, isPending, isError } = useRegister();
 
   const [formData, setFormData] = useState<RegisterFormData>({
     firstName: '',
@@ -24,17 +23,6 @@ export const RegisterModal: React.FC<{ onRegisterSuccess?: () => void }> = () =>
   });
 
   const [validationErrors, setValidationErrors] = useState<Partial<Record<keyof RegisterFormData, string>>>({});
-
-  const mutation = useMutation({
-    mutationFn: registerApi,
-    onSuccess: (data) => {
-      queryClient.setQueryData(authQueryOptions.queryKey, data);
-      navigate({ to: '/onboarding', replace: true });
-    },
-    onError: (error) => {
-      console.error("Registration Failed:", error);
-    }
-  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,7 +45,7 @@ export const RegisterModal: React.FC<{ onRegisterSuccess?: () => void }> = () =>
       return;
     }
 
-    mutation.mutate(result.data);
+    mutate(result.data);
   };
 
   return (
@@ -75,11 +63,11 @@ export const RegisterModal: React.FC<{ onRegisterSuccess?: () => void }> = () =>
            </p>
         </div>
 
-        {mutation.isError && (
+        {isError && (
           <div className="mb-6 p-3 rounded-xl bg-red-50 border border-red-100 flex items-center gap-2 text-red-600 animate-fade-in-up">
             <AlertCircle size={16} />
             <span className="text-[11px] font-bold uppercase tracking-wide">
-              {mutation.error instanceof Error ? mutation.error.message : "Registration failed"}
+              {isError ? "Registration failed" : "Registration failed"}
             </span>
           </div>
         )}
@@ -148,11 +136,11 @@ export const RegisterModal: React.FC<{ onRegisterSuccess?: () => void }> = () =>
           <div className="pt-4 flex flex-col items-center gap-6">
             <Button 
               type="submit"
-              isLoading={mutation.isPending}
+              isLoading={isPending}
               className="group w-full py-4 rounded-full bg-[#005C5C] text-white font-bold text-xs uppercase tracking-widest"
             >
-              {mutation.isPending ? 'Creating Account...' : 'Create Account'}
-              {!mutation.isPending && <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />}
+              {isPending ? 'Creating Account...' : 'Create Account'}
+              {!isPending && <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />}
             </Button>
             
             <div className="text-center flex items-center justify-center gap-2">

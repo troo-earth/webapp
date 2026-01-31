@@ -33,7 +33,7 @@ export interface Listing {
   image: string;
   pricePerUnit: number;
   totalValue: number;
-  status: 'open' | 'closed' ;
+  status: 'active' | 'closed' ;
   vintage: number;
   location: string;
   registry: string;
@@ -43,6 +43,6 @@ export interface Listing {
 
 // Filter options
 export interface ListingsFilter {
-  status?: 'open' | 'closed';
+  status?: 'active' | 'closed';
   vintage?: number;
 }

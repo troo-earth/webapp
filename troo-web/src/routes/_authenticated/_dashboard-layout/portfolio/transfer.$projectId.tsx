@@ -1,4 +1,4 @@
-import TransferCreditsPage from '@/pages/dashboard/project/TransferCreditPage'
+import TransferCreditsPage from '@/pages/dashboard/listing/TransferCreditPage'
 import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute(
