@@ -24,7 +24,6 @@ import { Route as AuthenticatedDashboardLayoutPortfolioIndexRouteImport } from '
 import { Route as AuthenticatedDashboardLayoutPortfolioTransactionsRouteImport } from './routes/_authenticated/_dashboard-layout/portfolio/transactions'
 import { Route as AuthenticatedDashboardLayoutPortfolioTransferProjectIdRouteImport } from './routes/_authenticated/_dashboard-layout/portfolio/transfer.$projectId'
 import { Route as AuthenticatedDashboardLayoutPortfolioRetireProjectIdRouteImport } from './routes/_authenticated/_dashboard-layout/portfolio/retire.$projectId'
-import { Route as AuthenticatedDashboardLayoutPortfolioProjectHoldingIdRouteImport } from './routes/_authenticated/_dashboard-layout/portfolio/project.$holdingId'
 import { Route as AuthenticatedDashboardLayoutPortfolioListProjectIdRouteImport } from './routes/_authenticated/_dashboard-layout/portfolio/list.$projectId'
 import { Route as AuthenticatedDashboardLayoutSourceListingListingIdRouteImport } from './routes/_authenticated/_dashboard-layout/$source/listing.$listingId_'
 
@@ -111,12 +110,6 @@ const AuthenticatedDashboardLayoutPortfolioRetireProjectIdRoute =
     path: '/portfolio/retire/$projectId',
     getParentRoute: () => AuthenticatedDashboardLayoutRoute,
   } as any)
-const AuthenticatedDashboardLayoutPortfolioProjectHoldingIdRoute =
-  AuthenticatedDashboardLayoutPortfolioProjectHoldingIdRouteImport.update({
-    id: '/portfolio/project/$holdingId',
-    path: '/portfolio/project/$holdingId',
-    getParentRoute: () => AuthenticatedDashboardLayoutRoute,
-  } as any)
 const AuthenticatedDashboardLayoutPortfolioListProjectIdRoute =
   AuthenticatedDashboardLayoutPortfolioListProjectIdRouteImport.update({
     id: '/portfolio/list/$projectId',
@@ -144,7 +137,6 @@ export interface FileRoutesByFullPath {
   '/portfolio': typeof AuthenticatedDashboardLayoutPortfolioIndexRoute
   '/$source/listing/$listingId': typeof AuthenticatedDashboardLayoutSourceListingListingIdRoute
   '/portfolio/list/$projectId': typeof AuthenticatedDashboardLayoutPortfolioListProjectIdRoute
-  '/portfolio/project/$holdingId': typeof AuthenticatedDashboardLayoutPortfolioProjectHoldingIdRoute
   '/portfolio/retire/$projectId': typeof AuthenticatedDashboardLayoutPortfolioRetireProjectIdRoute
   '/portfolio/transfer/$projectId': typeof AuthenticatedDashboardLayoutPortfolioTransferProjectIdRoute
 }
@@ -162,7 +154,6 @@ export interface FileRoutesByTo {
   '/portfolio': typeof AuthenticatedDashboardLayoutPortfolioIndexRoute
   '/$source/listing/$listingId': typeof AuthenticatedDashboardLayoutSourceListingListingIdRoute
   '/portfolio/list/$projectId': typeof AuthenticatedDashboardLayoutPortfolioListProjectIdRoute
-  '/portfolio/project/$holdingId': typeof AuthenticatedDashboardLayoutPortfolioProjectHoldingIdRoute
   '/portfolio/retire/$projectId': typeof AuthenticatedDashboardLayoutPortfolioRetireProjectIdRoute
   '/portfolio/transfer/$projectId': typeof AuthenticatedDashboardLayoutPortfolioTransferProjectIdRoute
 }
@@ -183,7 +174,6 @@ export interface FileRoutesById {
   '/_authenticated/_dashboard-layout/portfolio/': typeof AuthenticatedDashboardLayoutPortfolioIndexRoute
   '/_authenticated/_dashboard-layout/$source/listing/$listingId_': typeof AuthenticatedDashboardLayoutSourceListingListingIdRoute
   '/_authenticated/_dashboard-layout/portfolio/list/$projectId': typeof AuthenticatedDashboardLayoutPortfolioListProjectIdRoute
-  '/_authenticated/_dashboard-layout/portfolio/project/$holdingId': typeof AuthenticatedDashboardLayoutPortfolioProjectHoldingIdRoute
   '/_authenticated/_dashboard-layout/portfolio/retire/$projectId': typeof AuthenticatedDashboardLayoutPortfolioRetireProjectIdRoute
   '/_authenticated/_dashboard-layout/portfolio/transfer/$projectId': typeof AuthenticatedDashboardLayoutPortfolioTransferProjectIdRoute
 }
@@ -203,7 +193,6 @@ export interface FileRouteTypes {
     | '/portfolio'
     | '/$source/listing/$listingId'
     | '/portfolio/list/$projectId'
-    | '/portfolio/project/$holdingId'
     | '/portfolio/retire/$projectId'
     | '/portfolio/transfer/$projectId'
   fileRoutesByTo: FileRoutesByTo
@@ -221,7 +210,6 @@ export interface FileRouteTypes {
     | '/portfolio'
     | '/$source/listing/$listingId'
     | '/portfolio/list/$projectId'
-    | '/portfolio/project/$holdingId'
     | '/portfolio/retire/$projectId'
     | '/portfolio/transfer/$projectId'
   id:
@@ -241,7 +229,6 @@ export interface FileRouteTypes {
     | '/_authenticated/_dashboard-layout/portfolio/'
     | '/_authenticated/_dashboard-layout/$source/listing/$listingId_'
     | '/_authenticated/_dashboard-layout/portfolio/list/$projectId'
-    | '/_authenticated/_dashboard-layout/portfolio/project/$holdingId'
     | '/_authenticated/_dashboard-layout/portfolio/retire/$projectId'
     | '/_authenticated/_dashboard-layout/portfolio/transfer/$projectId'
   fileRoutesById: FileRoutesById
@@ -360,13 +347,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardLayoutPortfolioRetireProjectIdRouteImport
       parentRoute: typeof AuthenticatedDashboardLayoutRoute
     }
-    '/_authenticated/_dashboard-layout/portfolio/project/$holdingId': {
-      id: '/_authenticated/_dashboard-layout/portfolio/project/$holdingId'
-      path: '/portfolio/project/$holdingId'
-      fullPath: '/portfolio/project/$holdingId'
-      preLoaderRoute: typeof AuthenticatedDashboardLayoutPortfolioProjectHoldingIdRouteImport
-      parentRoute: typeof AuthenticatedDashboardLayoutRoute
-    }
     '/_authenticated/_dashboard-layout/portfolio/list/$projectId': {
       id: '/_authenticated/_dashboard-layout/portfolio/list/$projectId'
       path: '/portfolio/list/$projectId'
@@ -393,7 +373,6 @@ interface AuthenticatedDashboardLayoutRouteChildren {
   AuthenticatedDashboardLayoutPortfolioIndexRoute: typeof AuthenticatedDashboardLayoutPortfolioIndexRoute
   AuthenticatedDashboardLayoutSourceListingListingIdRoute: typeof AuthenticatedDashboardLayoutSourceListingListingIdRoute
   AuthenticatedDashboardLayoutPortfolioListProjectIdRoute: typeof AuthenticatedDashboardLayoutPortfolioListProjectIdRoute
-  AuthenticatedDashboardLayoutPortfolioProjectHoldingIdRoute: typeof AuthenticatedDashboardLayoutPortfolioProjectHoldingIdRoute
   AuthenticatedDashboardLayoutPortfolioRetireProjectIdRoute: typeof AuthenticatedDashboardLayoutPortfolioRetireProjectIdRoute
   AuthenticatedDashboardLayoutPortfolioTransferProjectIdRoute: typeof AuthenticatedDashboardLayoutPortfolioTransferProjectIdRoute
 }
@@ -416,8 +395,6 @@ const AuthenticatedDashboardLayoutRouteChildren: AuthenticatedDashboardLayoutRou
       AuthenticatedDashboardLayoutSourceListingListingIdRoute,
     AuthenticatedDashboardLayoutPortfolioListProjectIdRoute:
       AuthenticatedDashboardLayoutPortfolioListProjectIdRoute,
-    AuthenticatedDashboardLayoutPortfolioProjectHoldingIdRoute:
-      AuthenticatedDashboardLayoutPortfolioProjectHoldingIdRoute,
     AuthenticatedDashboardLayoutPortfolioRetireProjectIdRoute:
       AuthenticatedDashboardLayoutPortfolioRetireProjectIdRoute,
     AuthenticatedDashboardLayoutPortfolioTransferProjectIdRoute:

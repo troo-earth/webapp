@@ -5,7 +5,6 @@ import {
   ArrowLeft,
   ExternalLink,
   FileText,
-  Zap,
   Leaf,
   CheckCircle,
   Building2,
@@ -15,43 +14,39 @@ import {
   Download,
   Clock,
   Globe,
-  Store,
 } from "lucide-react";
 import { Link, useParams } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import LoadingScreen from "@/components/global/Loading";
-import { Button } from "@/components/ui/buttons/Button";
 import {
   fallBackUrl,
   getCountryName,
   getSDGColor,
 } from "@/entities/listings/utils/helpers";
 import useScrollToTopOnNav from "@/hooks/useScrollToTopOnNav";
-import { useState } from "react";
-import { PurchaseModal } from "@/entities/listings/components/ListingPurchaseModal";
-import { listingQueries } from "@/entities/listings/queries/listingQueries";
+import { portfolioQueries } from "@/features/portfolio/query/portfolioQuery";
 
-export const ListingPage = () => {
-  const { source, listingId } = useParams({
-    from: "/_authenticated/_dashboard-layout/$source/listing/$listingId_",
+export const PortfolioProjectDetailPage = () => {
+  const { holdingId } = useParams({
+    from: "/_authenticated/_dashboard-layout/portfolio/project/$holdingId",
   });
 
   useScrollToTopOnNav();
 
-  const [isPurchaseModalOpen, setPurchaseModalOpen] = useState(false);
-
   const {
-    data: listing,
+    data: holdingData,
     isLoading,
     isError,
-  } = useQuery(listingQueries.ById(listingId));
+  } = useQuery(portfolioQueries.holdingProject(holdingId));
 
-  const project = listing?.project;
+  const project = holdingData;
 
   if (isLoading) return <LoadingScreen />;
-  if (isError || !listing)
+  if (isError || !project)
     return (
-      <div className="p-20 text-center font-bold">Listing data unavailable</div>
+      <div className="p-20 text-center font-bold">
+        Project data unavailable
+      </div>
     );
 
   return (
@@ -59,13 +54,11 @@ export const ListingPage = () => {
       <header className="z-40 transition-all duration-300 p-6">
         <div className="mx-auto flex items-center justify-between">
           <Link
-            to={`/${source}` as any}
+            to="/portfolio"
             className="flex items-center gap-2 text-gray-500 hover:text-primary transition-all cursor-pointer font-bold text-sm group"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            <span>
-              Back to <span className="capitalize">{source}</span>
-            </span>
+            <span>Back to Portfolio</span>
           </Link>
 
           {project?.id && (
@@ -73,7 +66,7 @@ export const ListingPage = () => {
               <span className="text-[10px] font-black text-primary capitalize tracking-widest">
                 Registry ID:
               </span>
-              <span className="text-[12px] font-bold text-gray-900 ">
+              <span className="text-[12px] font-bold text-gray-900">
                 {project.id}
               </span>
             </div>
@@ -83,6 +76,7 @@ export const ListingPage = () => {
 
       <main className="mx-auto px-6 pt-2 pb-20">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+          {/* Left Column - Project Details */}
           <div className="lg:col-span-2 space-y-12">
             <section className="space-y-4">
               <div className="flex gap-2">
@@ -182,7 +176,7 @@ export const ListingPage = () => {
                           <h4 className="font-black text-gray-900 capitalize text-[16px] mb-2">
                             {item.title}
                           </h4>
-                          <p className="text-[14px] text-gray-500 ">
+                          <p className="text-[14px] text-gray-500">
                             {item.description}
                           </p>
                         </div>
@@ -193,53 +187,17 @@ export const ListingPage = () => {
               )}
           </div>
 
+          {/* Right Column - Project Info Only */}
           <div className="lg:col-span-1">
             <div className="sticky top-24 space-y-6">
               <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] p-8">
                 <div className="mb-6">
                   <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">
-                    Market Price
+                    Project Information
                   </span>
-                  <div className="flex items-baseline gap-1 mt-1">
-                    <span className="text-4xl font-black text-gray-900">
-                      ${listing?.price_per_credit}
-                    </span>
-                    <span className="text-gray-400 font-bold">/ tCO2e</span>
-                  </div>
                 </div>
 
-                <div className="space-y-3 mb-8 pt-6 border-t border-gray-50">
-                  {listing?.seller && (
-                    <div className="flex justify-between items-center pb-3 mb-3 border-b border-gray-50 border-dashed">
-                      <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tight flex items-center gap-1.5">
-                        <Store className="w-3.5 h-3.5" /> Sold By
-                      </span>
-                      <div className="flex items-center gap-1.5">
-                        <span
-                          className="text-sm font-black text-gray-900 text-right max-w-37.5 truncate"
-                          title={listing.seller.name}
-                        >
-                          {listing.seller.name}
-                        </span>
-                        {listing.seller.type === "registry" && (
-                          <BadgeCheck className="w-4 h-4 text-blue-500" />
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {listing?.credits_available && (
-                    <div className="flex justify-between items-center">
-                      <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tight">
-                        Credits Available
-                      </span>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-sm font-black text-gray-900">
-                          {parseFloat(listing.credits_available)}
-                        </span>
-                      </div>
-                    </div>
-                  )}
+                <div className="space-y-3 pt-6 border-t border-gray-50">
                   {project?.estimatedAnnualMitigations && (
                     <div className="flex justify-between items-center">
                       <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tight">
@@ -257,6 +215,7 @@ export const ListingPage = () => {
                       </span>
                     </div>
                   )}
+
                   {project?.status && (
                     <div className="flex justify-between items-center">
                       <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tight">
@@ -272,18 +231,10 @@ export const ListingPage = () => {
                   )}
                 </div>
 
-                <Button
-                  onClick={() => setPurchaseModalOpen(true)}
-                  className="w-full bg-primary hover:bg-primary-dark cursor-pointer text-white py-5 rounded-2xl font-black text-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary/20 flex items-center justify-center gap-3"
-                >
-                  Buy Carbon Credits <Zap className="w-5 h-5 fill-current" />
-                </Button>
-
                 <div className="mt-6 flex items-center justify-center gap-2 py-3 px-4 bg-gray-50 rounded-xl border border-gray-100">
                   <ShieldCheck className="w-4 h-4 text-gray-400" />
                   <span className="text-[10px] font-black text-gray-500 uppercase tracking-tight">
-                    Secure <span className="text-[#635BFF]">Stripe</span>{" "}
-                    Payment
+                    Registry Verified
                   </span>
                 </div>
               </div>
@@ -321,7 +272,8 @@ export const ListingPage = () => {
                   {project?.proponents && project?.proponents.length > 0 && (
                     <div>
                       <h4 className="text-[10px] font-black text-primary uppercase tracking-widest mb-4 flex items-center gap-2">
-                        <Building2 className="w-3.5 h-3.5" /> Project Proponents
+                        <Building2 className="w-3.5 h-3.5" /> Project
+                        Proponents
                       </h4>
                       {project.proponents.map((p) => (
                         <Link
@@ -375,13 +327,13 @@ export const ListingPage = () => {
               {project?.documentation && project?.documentation.length > 0 && (
                 <div className="bg-gray-50/50 rounded-4xl p-6 border border-gray-100">
                   <h4 className="text-[10px] font-black text-gray-900 uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <FileSearch className="w-3.5 h-3.5 text-primary" /> Project
-                    Hub
+                    <FileSearch className="w-3.5 h-3.5 text-primary" />{" "}
+                    Project Hub
                   </h4>
                   <div className="space-y-2">
                     {project.documentation.map((doc) => {
                       const isDownloadable = /\.(pdf|xlsx|csv|kml)$/i.test(
-                        doc.name || "",
+                        doc.name || ""
                       );
                       return (
                         <a
@@ -417,14 +369,6 @@ export const ListingPage = () => {
           </div>
         </div>
       </main>
-      <PurchaseModal
-        isOpen={isPurchaseModalOpen}
-        onClose={() => setPurchaseModalOpen(false)}
-        listingId={listingId}
-        pricePerCredit={Number(listing?.price_per_credit || 0)}
-        projectTitle={listing?.project?.fullName || "Project"}
-        registry={listing?.project?.registry || "Standard"}
-      />
     </div>
   );
 };
