@@ -45,7 +45,9 @@
 
       return extractLoginAuthObject(response);
     } catch (error) {
-      const status = error?.status;
+      const status = (error && typeof error === 'object' && 'status' in error) 
+      ? (error as { status: number }).status 
+      : null;
 
       if (status === 401) {
         return null;

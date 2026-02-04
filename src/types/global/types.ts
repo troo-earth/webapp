@@ -8,7 +8,7 @@ export interface User {
   user_id: string;
   fullname: string;
   email: string;
-  org_id?: string;
+  org_id: string | null;
 }
 
 export interface SelectOption {
