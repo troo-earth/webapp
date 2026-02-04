@@ -1,6 +1,6 @@
-import type { Project } from "@/entities/listings/types/listingTypes";
+import type { ListingResponse } from "@/entities/listings/types/listingTypes";
 
-  export type FactCardType = {
+export type FactCardType = {
     id: string;
     type: 'fact';
     title: string;
@@ -8,4 +8,4 @@ import type { Project } from "@/entities/listings/types/listingTypes";
     color: string;
   };
   
-  export type DisplayItem = Project | FactCardType;
+  export type DisplayItem = ListingResponse | FactCardType;

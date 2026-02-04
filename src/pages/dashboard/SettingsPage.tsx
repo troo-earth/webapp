@@ -110,7 +110,7 @@ const SettingsPage = () => {
     const validation = orgSchema.safeParse(orgForm);
     
     if (!validation.success) {
-      alert(validation.error.errors[0].message);
+      alert(validation.error.issues[0].message);
       return;
     }
     
@@ -140,7 +140,7 @@ const SettingsPage = () => {
     const validation = userSchema.safeParse(userForm);
 
     if (!validation.success) {
-      alert(validation.error.errors[0].message);
+      alert(validation.error.issues[0].message);
       return;
     }
     
@@ -162,7 +162,7 @@ const SettingsPage = () => {
     const validation = inviteSchema.safeParse(inviteForm);
 
     if (!validation.success) {
-      alert(validation.error.errors[0].message);
+      alert(validation.error.issues[0].message);
       return;
     }
 
