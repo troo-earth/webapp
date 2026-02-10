@@ -43,6 +43,7 @@ export const useLogin = () => {
 
 
 export const useOnboarding = () => {
+  const navigate = useNavigate();
 
   return useMutation({
     mutationFn: async ({ formData, logoFile, proofFile }: OnboardingParams) => {
@@ -65,6 +66,7 @@ export const useOnboarding = () => {
     },
     onSuccess: () => {
       notify.success("Organization onboarded successfully");
+      navigate({ to: '/explore', replace: true });
     },
     onError: (error) => {
       notify.error("Organization onboarding failed");

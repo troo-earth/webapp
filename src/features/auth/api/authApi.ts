@@ -22,11 +22,9 @@
       const fullname = trimmedLastName 
         ? `${trimmedFirstName} ${trimmedLastName}` 
         : trimmedFirstName;
-      
-      const user_name = `${trimmedFirstName}${trimmedLastName}`.toLowerCase().replace(/\s+/g, '');
-      
+            
       const apiPayload = {
-        user_name,
+        user_name: data.username,
         email: data.email,
         password: data.password,
         fullname,

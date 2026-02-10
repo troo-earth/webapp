@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Building2, UserPlus, LogOut, Camera, CheckCircle2, Copy 
+  Building2, UserPlus, LogOut, Camera, CheckCircle2, Copy, 
+  Shield,
+  Mail
 } from 'lucide-react';
 import { Button } from '@/components/ui/buttons/Button';
 import { InputField } from '@/components/ui/input/InputField';
@@ -13,6 +15,7 @@ import { uploadLogoApi } from '@/features/auth/api/authApi';
 import { inviteSchema, orgSchema, userSchema } from '@/features/settings/utils/settingsSchema';
 import { notify } from '@/components/global/Toast';
 import { useRouteContext } from '@tanstack/react-router';
+import { SelectField } from '@/components/ui/input/SelectField';
 
 
 const SettingsPage = () => {
@@ -30,6 +33,7 @@ const SettingsPage = () => {
 
   const { data: org, isLoading: isOrgLoading } = useQuery(settingsQueries.viewOrgInfo());
   const { data: userInfo, isLoading: isUserLoading } = useQuery(settingsQueries.viewUserInfo(user?.user_id));
+  const { data: inviteesInfo, isLoading: isInviteesLoading } = useQuery(settingsQueries.viewOrgInvitees())
 
   const updateOrgMutation = useUpdateOrganization();
   const updateUserMutation = useUpdateUser();
@@ -38,6 +42,8 @@ const SettingsPage = () => {
   const employees = org?.employees || [];
   const fileInputRef = useRef<HTMLInputElement>(null);  
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [activeTab, setActiveTab] = useState('members');
+  console.log(inviteesInfo)
 
 
   const [orgForm, setOrgForm] = useState({ 
@@ -45,6 +51,34 @@ const SettingsPage = () => {
     regId: '',
     logoUrl: '' 
   });
+
+  const ROLE_OPTIONS = [
+  { value: 'admin', label: 'Admin' },
+  { value: 'manager', label: 'Manager' },
+  { value: 'viewer', label: 'Viewer' },
+];
+
+  const invitations = [
+  {
+    id: "inv_01",
+    email: "hr@partner-agency.com",
+    role: "Manager",
+    sent_at: "2024-05-20"
+  },
+  {
+    id: "inv_02",
+    email: "contractor.dev@gmail.com",
+    role: "Developer",
+    sent_at: "2024-05-21"
+  },
+  {
+    id: "inv_03",
+    email: "design.lead@freelance.co",
+    role: "Editor",
+    sent_at: "2024-05-22"
+  }
+];
+
 
   const [userForm, setUserForm] = useState({ 
     fullName: '', 
@@ -55,9 +89,10 @@ const SettingsPage = () => {
   });
 
   const [inviteForm, setInviteForm] = useState({ 
-    org_id: org_id || '',
+    // org_id: org_id || '',
     email: '', 
-    invited_by_user_id: userId || '',
+    role:'',
+    // invited_by_user_id: userId || '',
   });
 
 
@@ -229,60 +264,131 @@ const SettingsPage = () => {
             <Button className='bg-primary' onClick={() => setIsOrgModalOpen(true)}>Edit Profile</Button>
           </div>
         </section>
-        <section>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
-            <div>
-              <h2 className="text-2xl font-black text-[#0F1F1F]">User Access</h2>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Manage team roles and permissions</p>
-            </div>
-            <div className="flex gap-3">
-              <Button variant="outline" className="border-red-100 text-red-500 hover:bg-red-50 flex items-center gap-2">
-                <LogOut size={16} /> Leave
-              </Button>
-              <Button className="bg-primary flex items-center gap-2" onClick={() => setIsInviteModalOpen(true)}>
-                <UserPlus size={16} /> Invite User
-              </Button>
-            </div>
-          </div>
-          <div className="bg-white/40 backdrop-blur-md rounded-[2.5rem] border border-white overflow-hidden shadow-sm">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-gray-100">
-                  <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-400">User</th>
-                  <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-400">Username</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {employees.length > 0 ? (
-                  employees.map((emp) => (
-                    <tr key={emp.user_id} className="group hover:bg-white/50 transition-colors">
-                      <td className="px-8 py-5">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm uppercase">
-                            {emp.fullname.charAt(0)}
-                          </div>
-                          <div>
-                            <p className="text-sm font-bold text-[#0F1F1F]">{emp.fullname}</p>
-                            <p className="text-xs text-gray-400">{emp.email}</p>
-                          </div>
+
+
+<section>
+      {/* Header Section */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+        <div>
+          <h2 className="text-2xl font-black text-[#0F1F1F]">User Access</h2>
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Manage team roles and permissions</p>
+        </div>
+        <div className="flex gap-3">
+          <button 
+            className="bg-[#0F1F1F] text-white px-5 py-2.5 rounded-2xl flex items-center gap-2 text-sm font-bold hover:opacity-90 transition-all shadow-lg shadow-black/5"
+            onClick={() => setIsInviteModalOpen(true)}
+          >
+            <UserPlus size={16} /> Invite User
+          </button>
+        </div>
+      </div>
+
+      {/* Tabs Navigation */}
+      <div className="flex gap-8 mb-6 border-b border-gray-100 px-2">
+        <button 
+          onClick={() => setActiveTab('members')}
+          className={`pb-4 text-sm font-black uppercase tracking-widest transition-all relative ${
+            activeTab === 'members' ? 'text-primary' : 'text-gray-400 hover:text-gray-600'
+          }`}
+        >
+          Members
+          {activeTab === 'members' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-full" />}
+        </button>
+        
+        <button 
+          onClick={() => setActiveTab('invitations')}
+          className={`pb-4 text-sm font-black uppercase tracking-widest transition-all relative flex items-center gap-2 ${
+            activeTab === 'invitations' ? 'text-primary' : 'text-gray-400 hover:text-gray-600'
+          }`}
+        >
+          Invitations
+          <span className="bg-gray-100 text-[#0F1F1F] px-2 py-0.5 rounded-full text-[10px]">
+            {invitations?.length || 0}
+          </span>
+          {activeTab === 'invitations' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-full" />}
+        </button>
+      </div>
+
+      {/* Table Container */}
+      <div className="bg-white/40 backdrop-blur-md rounded-[2.5rem] border border-white overflow-hidden shadow-sm">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="border-b border-gray-100">
+              <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-400">User</th>
+              <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-400">Username</th>
+              <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-400">Role</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-50">
+            {activeTab === 'members' ? (
+              // MEMBERS VIEW
+              employees.length > 0 ? (
+                employees.map((emp) => (
+                  <tr key={emp.user_id} className="group hover:bg-white/50 transition-colors">
+                    <td className="px-8 py-5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm uppercase">
+                          {emp.fullname.charAt(0)}
                         </div>
-                      </td>
-                      <td className="px-8 py-5">
-                        <span className="text-xs font-bold text-[#0F1F1F]">@{emp.user_name}</span>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={2} className="px-8 py-8 text-center text-sm text-gray-400">
-                      No other members found in this organization.
+                        <div>
+                          <p className="text-sm font-bold text-[#0F1F1F]">{emp.fullname}</p>
+                          <p className="text-xs text-gray-400">{emp.email}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-8 py-5">
+                      <span className="text-xs font-bold text-[#0F1F1F]">@{emp.user_name}</span>
+                    </td>
+                    <td className="px-8 py-5">
+                      <div className="flex items-center gap-1.5 bg-gray-100/50 w-fit px-3 py-1 rounded-full">
+                        <Shield size={12} className="text-gray-400" />
+                        <span className="text-[10px] font-extrabold uppercase  text-primary">{emp.role || 'Member'}</span>
+                      </div>
                     </td>
                   </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </section>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={3} className="px-8 py-12 text-center text-sm text-gray-400 italic">
+                    No members found in this organization.
+                  </td>
+                </tr>
+              )
+            ) : (
+              // INVITATIONS VIEW
+              invitations.length > 0 ? (
+                invitations.map((inv) => (
+                  <tr key={inv.id} className="group hover:bg-white/50 transition-colors">
+                    <td className="px-8 py-5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
+                          <Mail size={16} />
+                        </div>
+                        <p className="text-sm font-bold text-[#0F1F1F]">{inv.email}</p>
+                      </div>
+                    </td>
+                    <td className="px-8 py-5 italic text-gray-400 text-xs">
+                      Pending acceptance...
+                    </td>
+                    <td className="px-8 py-5">
+                      <div className="flex items-center gap-1.5 bg-blue-50 w-fit px-3 py-1 rounded-full">
+                        <span className="text-[10px] font-black uppercase tracking-tight text-blue-600">{inv.role}</span>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={3} className="px-8 py-12 text-center text-sm text-gray-400 italic">
+                    No pending invitations.
+                  </td>
+                </tr>
+              )
+            )}
+          </tbody>
+        </table>
+      </div>
+    </section>
       </div>
       )}
 
@@ -407,31 +513,46 @@ const SettingsPage = () => {
       </Modal>
 
       <Modal 
-        isOpen={isInviteModalOpen} 
-        onClose={() => setIsInviteModalOpen(false)} 
-        title="Invite Team Member"
-      >
-        <div className="space-y-8">
-          <p className="text-sm text-gray-500">Send an invitation email to a new user to grant them access to <strong>{org?.org_name}</strong>.</p>
-          <InputField 
-            label="Email Address" 
-            placeholder="colleague@example.com" 
-            type="email" 
-            value={inviteForm.email}
-            onChange={(e) => setInviteForm({...inviteForm, email: e.target.value})}
-          />
-          {/* <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-[#005C5C]">Assign Role</label>
-          </div> */}
-          <Button 
-            className="w-full bg-primary py-4" 
-            onClick={handleInvite}
-            disabled={inviteUserMutation.isPending}
-          >
-            {inviteUserMutation.isPending ? 'Sending...' : 'Send Invitation'}
-          </Button>
-        </div>
-      </Modal>
+  isOpen={isInviteModalOpen} 
+  onClose={() => setIsInviteModalOpen(false)} 
+  title="Invite Team Member"
+>
+  <div className="space-y-8">
+    <p className="text-sm text-gray-500">
+      Send an invitation email to a new user to grant them access to <strong>{org?.org_name}</strong>.
+    </p>
+
+    <div className="space-y-6">
+      {/* Email Input */}
+      <InputField 
+        label="Email Address" 
+        placeholder="colleague@example.com" 
+        type="email" 
+        value={inviteForm.email}
+        onChange={(e) => setInviteForm({...inviteForm, email: e.target.value})}
+      />
+
+      {/* Role Selection */}
+      <SelectField 
+        label="Assign Role"
+        placeholder="Select a role..."
+        options={ROLE_OPTIONS}
+        value={inviteForm.role}
+        onChange={(val) => setInviteForm({...inviteForm, role: val})}
+        // If your inviteUserMutation or a local state has validation errors:
+        error={inviteForm.email && !inviteForm.role ? "Please select a role" : ""}
+      />
+    </div>
+
+    <Button 
+      className="w-full bg-primary py-4 mt-4" 
+      onClick={handleInvite}
+      disabled={inviteUserMutation.isPending || !inviteForm.email || !inviteForm.role}
+    >
+      {inviteUserMutation.isPending ? 'Sending...' : 'Send Invitation'}
+    </Button>
+  </div>
+</Modal>
 
     </div>
   );

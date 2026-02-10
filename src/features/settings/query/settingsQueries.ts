@@ -1,5 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
-import { getInfoByOrgIdApi, getInfoByUserIdApi } from "../api/settingsApi";
+import { getInfoByOrgIdApi, getInfoByUserIdApi, viewOrgInvitees } from "../api/settingsApi";
 
 export const settingsQueries = {
     viewOrgInfo : () => queryOptions({
@@ -13,4 +13,10 @@ export const settingsQueries = {
         queryFn: () => getInfoByUserIdApi(userId),
         staleTime: 30 * 60 * 1000,
         }),
+
+    viewOrgInvitees : () => queryOptions({
+        queryKey: ['view-invites'],
+        queryFn: () => viewOrgInvitees(),
+        staleTime: 30 * 60 * 1000,
+    })
 }

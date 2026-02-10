@@ -62,7 +62,7 @@ const ActiveTransactions = () => {
           {transactions.map((item) => (
             <div
               key={item.id}
-              className="group relative bg-white rounded-[2rem] p-6 border border-gray-100 hover:border-primary/20 hover:shadow-xl transition-all flex flex-col md:flex-row items-center gap-6"
+              className="group relative bg-white rounded-4xl p-6 border border-gray-100 hover:border-primary/20 hover:shadow-xl transition-all flex flex-col md:flex-row items-center gap-6"
             >
               {/* Transfer Icon */}
               <div className="hidden md:flex w-14 h-14 rounded-2xl bg-primary/5 items-center justify-center text-primary shrink-0">
@@ -96,7 +96,7 @@ const ActiveTransactions = () => {
               </div>
 
               {/* Amount & Status Management */}
-              <div className="flex flex-row md:flex-col items-center md:items-end gap-6 md:gap-4 pl-6 md:border-l border-gray-100 min-w-[220px]">
+              <div className="flex flex-row md:flex-col items-center md:items-end gap-6 md:gap-4 pl-6 md:border-l border-gray-100 min-w-55">
                 <div className="text-right">
                     <p className="text-2xl font-black text-[#0F1F1F]">
                       -{item.amount.toLocaleString()}

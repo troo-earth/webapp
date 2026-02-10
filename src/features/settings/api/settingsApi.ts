@@ -47,10 +47,21 @@ export const updateUserProfileApi = async (payload: UpdateUserDTO): Promise<User
 export const inviteUserApi = async (payload: InviteUserDTO): Promise<void> => {
   try {
     await api.post(
-      '/invitations/create', 
+      '/invitations/create-invite', 
       payload
     );
   } catch (error: unknown) {
     throw new Error(handleError(error, "Failed to send invitation."));
   }
 };
+
+export const viewOrgInvitees = async (): Promise<void> => {
+  try{
+    const response = await api.get(
+      '/invitations/view-invites',
+    );
+    return response.data.data;
+  } catch (error: unknown) {
+    throw new Error(handleError(error, "Failed to get organization invitees"))
+  }
+}

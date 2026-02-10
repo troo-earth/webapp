@@ -57,7 +57,6 @@ export interface UpdateUserDTO {
 }
 
 export interface InviteUserDTO {
-  org_id: string;
   email: string;
-  invited_by_user_id: string;
+  role: string;
 }

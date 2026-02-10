@@ -17,6 +17,7 @@ export const RegisterModal: React.FC<{ onRegisterSuccess?: () => void }> = () =>
   const [formData, setFormData] = useState<RegisterFormData>({
     firstName: '',
     lastName: '',
+    username:'',
     email: '',
     password: '',
     confirmPassword: ''
@@ -95,17 +96,27 @@ export const RegisterModal: React.FC<{ onRegisterSuccess?: () => void }> = () =>
             </div>
           </div>
 
-          <div className="space-y-1">
-            <InputField 
-              label="Company Email" 
-              placeholder="name@company.com" 
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({...formData, email: e.target.value})}
-              className={validationErrors.email ? "border-red-500" : ""}
-            />
-            {validationErrors.email && <p className="text-[10px] text-red-500 font-bold ml-1">{validationErrors.email}</p>}
-          </div>
+            <div className="space-y-1">
+              <InputField
+                label="Username"
+                placeholder="johndoee38"
+                value={formData.username}
+                onChange={(e) => setFormData({...formData, username: e.target.value})}
+                className={validationErrors.email ? "border-red-500" : ""}
+              />
+              {validationErrors.email && <p className="text-[10px] text-red-500 font-bold ml-1">{validationErrors.email}</p>}
+            </div>
+            <div className="space-y-1">
+              <InputField
+                label="Company Email"
+                placeholder="name@company.com"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                className={validationErrors.email ? "border-red-500" : ""}
+              />
+              {validationErrors.email && <p className="text-[10px] text-red-500 font-bold ml-1">{validationErrors.email}</p>}
+            </div>
 
          <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1">

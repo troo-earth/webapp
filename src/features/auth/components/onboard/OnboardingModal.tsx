@@ -8,6 +8,7 @@ import { onboardingSchema } from '../../utils/authSchema';
 import { COUNTRY_OPTIONS } from '@/lib/constants';
 import { SelectField } from '@/components/ui/input/SelectField';
 import { useOnboarding } from '../../hooks/useAuthMutations';
+import SuccessOverlay from './SuccessOverlay';
 
 interface OnboardingModalProps {
   onSuccess: () => void;
@@ -26,10 +27,14 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = () => {
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSuccess, setIsSuccess] = useState(false);
 
+
+  const handleAnimationComplete = () => {
+    navigate({ to: '/explore', replace: true });
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
-    console.log("Submitting onboarding form");
     e.preventDefault();
     setErrors({});
 
@@ -38,35 +43,41 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = () => {
       logo: logoFile,
       proof: proofFile
     });
-   console.log("Validation result:", result);
+
     if (!result.success) {
       const fieldErrors: Record<string, string> = {};
       result.error.issues.forEach((issue) => {
         fieldErrors[String(issue.path[0])] = issue.message;
       });
       setErrors(fieldErrors);
-      console.log("Validation errors:", fieldErrors);
       return;
     }
 
     mutate({
-    formData: {
-      companyName: result.data.companyName,
-      countryCode: result.data.countryCode,
-      registrationId: result.data.registrationId,
-    },
-    logoFile: result.data.logo,
-    proofFile: result.data.proof 
-  });
+        formData: {
+            companyName: result.data.companyName,
+            countryCode: result.data.countryCode,
+            registrationId: result.data.registrationId,
+        },
+        logoFile: result.data.logo,
+        proofFile: result.data.proof 
+    }, {
+        onSuccess: () => {
+            setIsSuccess(true);
+        }
+    });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'logo' | 'proof') => {
-    console.log("File selected for", type);
     if (e.target.files && e.target.files[0]) {
       if (type === 'logo') setLogoFile(e.target.files[0]);
       else setProofFile(e.target.files[0]);
     }
   };
+
+  if (isSuccess) {
+      return <SuccessOverlay onComplete={handleAnimationComplete} />;
+  }
 
   return (
     <div className="relative w-full max-w-4xl bg-white/60 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-[0_40px_100px_-20px_rgba(0,116,115,0.08)] border border-white/80 overflow-hidden">
