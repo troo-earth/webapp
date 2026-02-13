@@ -4,8 +4,31 @@ import AuthHeader from '../../features/auth/components/shared/AuthHeader';
 import BgGradient from '@/components/ui/global/BgGradient';
 import { LoginDecorative } from '../../features/auth/components/login/LoginDecorative';
 import type React from "react";
+import { useState } from "react";
+import LoadingScreen from "@/components/global/Loading";
+import InviteModal from "@/components/ui/modal/InviteModal";
+import { Route } from "@/routes/(public)/login";
+import { useNavigate } from "@tanstack/react-router";
 
 export const LoginPage: React.FC = () => {
+
+  const inviteData = Route.useLoaderData();
+  const navigate = useNavigate();
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  const invitedEmail = inviteData?.data?.valid ? inviteData.data.email : undefined;
+
+  if(isLoggingIn) {
+    return <LoadingScreen/>
+  }
+
+  const handleClearInvite = () => {
+    navigate({ 
+      search: {},
+      replace: true 
+    });
+  };
+
   return (
     <div className="relative h-screen w-full flex flex-col items-center justify-center overflow-hidden bg-[#FDFDFD] font-nunito">
       
@@ -17,11 +40,12 @@ export const LoginPage: React.FC = () => {
         <LoginDecorative/>
 
         <div className="col-span-1 lg:col-span-7 flex justify-center lg:justify-end h-full items-center">
-          <LoginModal />
+          <LoginModal onPendingChange={setIsLoggingIn} prefilledEmail={invitedEmail} onDismissInvite={handleClearInvite}/>
         </div>
       </div>
 
       <AuthFooter/>
+      <InviteModal data={inviteData} />
 
       <style>{`
         .animate-bounce-slow {

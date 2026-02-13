@@ -103,3 +103,13 @@
       throw new Error(handleError(error, "Onboarding process failed."));
     }
   };
+
+  export const checkInviteTokenApi = async (token: string ) => {
+    const payload = { token: token };
+    try {
+      const response = await api.post('/invitations/public/check-token', payload);
+      return response.data;
+    } catch (error: unknown) {
+      throw new Error(handleError(error, "Invalid or expired invitation token."));
+    }
+  }

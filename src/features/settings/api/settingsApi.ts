@@ -1,6 +1,6 @@
 import { api } from "@/lib/axiosConfig";
 import { handleError } from "@/utils/utils";
-import type { InviteUserDTO, OrganizationApiResponse, OrganizationData, UpdateOrgDTO, UpdateUserDTO, UserApiResponse, UserData } from "../types/settingsType";
+import type { InvitationsResponse, Invitees, InviteUser, OrganizationApiResponse, OrganizationData, UpdateOrg, UpdateUser, UserApiResponse, UserData } from "../types/settingsType";
 
 export const getInfoByOrgIdApi = async (): Promise<OrganizationData> =>{
   try{
@@ -20,7 +20,7 @@ export const getInfoByUserIdApi = async (userId:string): Promise<UserData> =>{
   }
 }
 
-export const updateOrganizationApi = async (payload: UpdateOrgDTO): Promise<OrganizationData> => {
+export const updateOrganizationApi = async (payload: UpdateOrg): Promise<OrganizationData> => {
   try {
     const response = await api.patch<{ data: OrganizationData }>(
       `/orgs/update-org/${payload.org_id}`, 
@@ -32,7 +32,7 @@ export const updateOrganizationApi = async (payload: UpdateOrgDTO): Promise<Orga
   }
 };
 
-export const updateUserProfileApi = async (payload: UpdateUserDTO): Promise<UserData> => {
+export const updateUserProfileApi = async (payload: UpdateUser): Promise<UserData> => {
   try {
     const response = await api.put<{ data: UserData }>(
       `/users/update-user/${payload.user_id}`, 
@@ -44,9 +44,9 @@ export const updateUserProfileApi = async (payload: UpdateUserDTO): Promise<User
   }
 };
 
-export const inviteUserApi = async (payload: InviteUserDTO): Promise<void> => {
+export const inviteUserApi = async (payload: InviteUser): Promise<void> => {
   try {
-    await api.post(
+    await api.post<InviteUser>(
       '/invitations/create-invite', 
       payload
     );
@@ -55,9 +55,9 @@ export const inviteUserApi = async (payload: InviteUserDTO): Promise<void> => {
   }
 };
 
-export const viewOrgInvitees = async (): Promise<void> => {
+export const viewOrgInvitees = async (): Promise<Invitees[]> => {
   try{
-    const response = await api.get(
+    const response = await api.get<InvitationsResponse>(
       '/invitations/view-invites',
     );
     return response.data.data;

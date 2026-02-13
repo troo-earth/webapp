@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Building2, UserPlus, LogOut, Camera, CheckCircle2, Copy, 
-  Shield,
-  Mail
+  Shield, Mail, Edit2, Trash2, AlertCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/buttons/Button';
 import { InputField } from '@/components/ui/input/InputField';
@@ -10,23 +9,40 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { settingsQueries } from '@/features/settings/query/settingsQueries';
 import LoadingScreen from '@/components/global/Loading';
 import { Modal } from '@/components/global/Modal';
-import { useUpdateOrganization, useUpdateUser, useInviteUser } from '@/features/settings/hooks/useSettingsMutations';
+import { 
+  useUpdateOrganization, 
+  useUpdateUser, 
+  useInviteUser, 
+  // useUpdateMemberRole, 
+  // useRemoveMember 
+} from '@/features/settings/hooks/useSettingsMutations';
 import { uploadLogoApi } from '@/features/auth/api/authApi';
 import { inviteSchema, orgSchema, userSchema } from '@/features/settings/utils/settingsSchema';
 import { notify } from '@/components/global/Toast';
 import { useRouteContext } from '@tanstack/react-router';
 import { SelectField } from '@/components/ui/input/SelectField';
+import type { InviteUser } from '@/features/settings/types/settingsType';
+import { canManage } from '@/features/settings/utils/settingsUtils';
 
 
 const SettingsPage = () => {
   const { user } = useRouteContext({ from: '/_authenticated' });
   const isRestricted = !user?.org_id;
+  const currentUserRole = user?.role || 'viewer';
+
+  console.log("User from route context:", user);
   
   const queryClient = useQueryClient();
 
   const [copied, setCopied] = useState(false);
   const [isOrgModalOpen, setIsOrgModalOpen] = useState(false);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+
+  // Management State
+  const [selectedMember, setSelectedMember] = useState<any>(null);
+  const [isEditRoleOpen, setIsEditRoleOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [newRole, setNewRole] = useState('');
 
   const userId = user?.user_id || '';
   const org_id = user?.org_id || '';
@@ -38,12 +54,13 @@ const SettingsPage = () => {
   const updateOrgMutation = useUpdateOrganization();
   const updateUserMutation = useUpdateUser();
   const inviteUserMutation = useInviteUser();
+  // const updateMemberRoleMutation = useUpdateMemberRole(); 
+  // const removeMemberMutation = useRemoveMember();
 
   const employees = org?.employees || [];
   const fileInputRef = useRef<HTMLInputElement>(null);  
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [activeTab, setActiveTab] = useState('members');
-  console.log(inviteesInfo)
 
 
   const [orgForm, setOrgForm] = useState({ 
@@ -53,32 +70,10 @@ const SettingsPage = () => {
   });
 
   const ROLE_OPTIONS = [
-  { value: 'admin', label: 'Admin' },
-  { value: 'manager', label: 'Manager' },
-  { value: 'viewer', label: 'Viewer' },
-];
-
-  const invitations = [
-  {
-    id: "inv_01",
-    email: "hr@partner-agency.com",
-    role: "Manager",
-    sent_at: "2024-05-20"
-  },
-  {
-    id: "inv_02",
-    email: "contractor.dev@gmail.com",
-    role: "Developer",
-    sent_at: "2024-05-21"
-  },
-  {
-    id: "inv_03",
-    email: "design.lead@freelance.co",
-    role: "Editor",
-    sent_at: "2024-05-22"
-  }
-];
-
+    { value: 'admin', label: 'Admin' },
+    { value: 'manager', label: 'Manager' },
+    { value: 'viewer', label: 'Viewer' },
+  ];
 
   const [userForm, setUserForm] = useState({ 
     fullName: '', 
@@ -88,13 +83,10 @@ const SettingsPage = () => {
     confirmPassword: '' 
   });
 
-  const [inviteForm, setInviteForm] = useState({ 
-    // org_id: org_id || '',
+  const [inviteForm, setInviteForm] = useState<InviteUser>({ 
     email: '', 
     role:'',
-    // invited_by_user_id: userId || '',
   });
-
 
   useEffect(() => {
     if (user) {
@@ -141,9 +133,7 @@ const SettingsPage = () => {
 
   const handleOrgSave = () => {
     if (!org?.org_id) return;
-
     const validation = orgSchema.safeParse(orgForm);
-    
     if (!validation.success) {
       alert(validation.error.issues[0].message);
       return;
@@ -160,12 +150,7 @@ const SettingsPage = () => {
         setIsOrgModalOpen(false); 
         queryClient.setQueryData(settingsQueries.viewOrgInfo().queryKey, (oldData: any) => {
           if (!oldData) return oldData;
-          return {
-            ...oldData,
-            org_name: orgForm.name,
-            registration_id: orgForm.regId,
-            logo_url: orgForm.logoUrl
-          };
+          return { ...oldData, org_name: orgForm.name, registration_id: orgForm.regId, logo_url: orgForm.logoUrl };
         });
       }
     });
@@ -173,7 +158,6 @@ const SettingsPage = () => {
 
   const handleUserSave = () => {
     const validation = userSchema.safeParse(userForm);
-
     if (!validation.success) {
       alert(validation.error.issues[0].message);
       return;
@@ -195,7 +179,6 @@ const SettingsPage = () => {
 
   const handleInvite = () => {
     const validation = inviteSchema.safeParse(inviteForm);
-
     if (!validation.success) {
       alert(validation.error.issues[0].message);
       return;
@@ -203,11 +186,53 @@ const SettingsPage = () => {
 
     inviteUserMutation.mutate(inviteForm, {
       onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: settingsQueries.viewOrgInvitees().queryKey });
         setIsInviteModalOpen(false);
-        setInviteForm(prev => ({ ...prev, email: '' }));
-        alert("Invitation sent!");
+        setInviteForm(prev => ({ ...prev, email: '', role: '' }));
+        notify.success("Invitation sent!");
       }
     });
+  };
+
+  
+  const openEditRole = (member: any) => {
+    setSelectedMember(member);
+    setNewRole(member.role);
+    setIsEditRoleOpen(true);
+  };
+
+  const openDeleteMember = (member: any) => {
+    setSelectedMember(member);
+    setIsDeleteOpen(true);
+  };
+
+  const handleUpdateRole = () => {
+    if (!selectedMember || !newRole) return;
+    
+    // updateMemberRoleMutation.mutate({
+    //   user_id: selectedMember.user_id,
+    //   role: newRole
+    // }, {
+    //   onSuccess: () => {
+    //     queryClient.invalidateQueries({ queryKey: settingsQueries.viewOrgInfo().queryKey });
+    //     setIsEditRoleOpen(false);
+    //     notify.success("Role updated successfully");
+    //   }
+    // });
+  };
+
+  const handleRemoveMember = () => {
+    if (!selectedMember) return;
+
+    // removeMemberMutation.mutate({
+    //   user_id: selectedMember.user_id
+    // }, {
+    //   onSuccess: () => {
+    //     queryClient.invalidateQueries({ queryKey: settingsQueries.viewOrgInfo().queryKey });
+    //     setIsDeleteOpen(false);
+    //     notify.success("Member removed successfully");
+    //   }
+    // });
   };
 
   const copyToClipboard = (text: string) => {
@@ -216,13 +241,14 @@ const SettingsPage = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  if (isOrgLoading || isUserLoading) return <LoadingScreen/>;
+  if (isOrgLoading || isUserLoading || isInviteesLoading) return <LoadingScreen/>;
 
   return (
     <div className="mx-auto space-y-16 p-8">
       
       {!isRestricted && (
       <div className='flex flex-col gap-16'>
+        
         <section>
           <div className="mb-6">
             <h2 className="text-2xl font-black text-[#0F1F1F]">Organization Settings</h2>
@@ -265,130 +291,149 @@ const SettingsPage = () => {
           </div>
         </section>
 
+        <section>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+            <div>
+              <h2 className="text-2xl font-black text-[#0F1F1F]">User Access</h2>
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Manage team roles and permissions</p>
+            </div>
+            <div className="flex gap-3">
+              {['admin', 'superadmin'].includes(currentUserRole) && (
+                <Button 
+                    className="bg-[#0F1F1F] text-white px-5 py-2.5 rounded-2xl flex items-center gap-2 text-sm font-bold hover:opacity-90 transition-all shadow-lg shadow-black/5"
+                    onClick={() => setIsInviteModalOpen(true)}
+                >
+                    <UserPlus size={16} /> Invite User
+                </Button>
+              )}
+            </div>
+          </div>
 
-<section>
-      {/* Header Section */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
-        <div>
-          <h2 className="text-2xl font-black text-[#0F1F1F]">User Access</h2>
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Manage team roles and permissions</p>
-        </div>
-        <div className="flex gap-3">
-          <button 
-            className="bg-[#0F1F1F] text-white px-5 py-2.5 rounded-2xl flex items-center gap-2 text-sm font-bold hover:opacity-90 transition-all shadow-lg shadow-black/5"
-            onClick={() => setIsInviteModalOpen(true)}
-          >
-            <UserPlus size={16} /> Invite User
-          </button>
-        </div>
-      </div>
+          <div className="flex gap-8 mb-6 border-b border-gray-100 px-2">
+            <button 
+              onClick={() => setActiveTab('members')}
+              className={`pb-4 text-sm font-black uppercase tracking-widest transition-all relative ${
+                activeTab === 'members' ? 'text-primary' : 'text-gray-400 hover:text-gray-600'
+              }`}
+            >
+              Members
+              {activeTab === 'members' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-full" />}
+            </button>
+            
+            <button 
+              onClick={() => setActiveTab('invitations')}
+              className={`pb-4 text-sm font-black uppercase tracking-widest transition-all relative flex items-center gap-2 ${
+                activeTab === 'invitations' ? 'text-primary' : 'text-gray-400 hover:text-gray-600'
+              }`}
+            >
+              Invitations
+              <span className="bg-gray-100 text-[#0F1F1F] px-2 py-0.5 rounded-full text-[10px]">
+                {inviteesInfo?.length || 0}
+              </span>
+              {activeTab === 'invitations' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-full" />}
+            </button>
+          </div>
 
-      {/* Tabs Navigation */}
-      <div className="flex gap-8 mb-6 border-b border-gray-100 px-2">
-        <button 
-          onClick={() => setActiveTab('members')}
-          className={`pb-4 text-sm font-black uppercase tracking-widest transition-all relative ${
-            activeTab === 'members' ? 'text-primary' : 'text-gray-400 hover:text-gray-600'
-          }`}
-        >
-          Members
-          {activeTab === 'members' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-full" />}
-        </button>
-        
-        <button 
-          onClick={() => setActiveTab('invitations')}
-          className={`pb-4 text-sm font-black uppercase tracking-widest transition-all relative flex items-center gap-2 ${
-            activeTab === 'invitations' ? 'text-primary' : 'text-gray-400 hover:text-gray-600'
-          }`}
-        >
-          Invitations
-          <span className="bg-gray-100 text-[#0F1F1F] px-2 py-0.5 rounded-full text-[10px]">
-            {invitations?.length || 0}
-          </span>
-          {activeTab === 'invitations' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-full" />}
-        </button>
-      </div>
-
-      {/* Table Container */}
-      <div className="bg-white/40 backdrop-blur-md rounded-[2.5rem] border border-white overflow-hidden shadow-sm">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b border-gray-100">
-              <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-400">User</th>
-              <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-400">Username</th>
-              <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-400">Role</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-50">
-            {activeTab === 'members' ? (
-              // MEMBERS VIEW
-              employees.length > 0 ? (
-                employees.map((emp) => (
-                  <tr key={emp.user_id} className="group hover:bg-white/50 transition-colors">
-                    <td className="px-8 py-5">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm uppercase">
-                          {emp.fullname.charAt(0)}
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold text-[#0F1F1F]">{emp.fullname}</p>
-                          <p className="text-xs text-gray-400">{emp.email}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-8 py-5">
-                      <span className="text-xs font-bold text-[#0F1F1F]">@{emp.user_name}</span>
-                    </td>
-                    <td className="px-8 py-5">
-                      <div className="flex items-center gap-1.5 bg-gray-100/50 w-fit px-3 py-1 rounded-full">
-                        <Shield size={12} className="text-gray-400" />
-                        <span className="text-[10px] font-extrabold uppercase  text-primary">{emp.role || 'Member'}</span>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={3} className="px-8 py-12 text-center text-sm text-gray-400 italic">
-                    No members found in this organization.
-                  </td>
+          <div className="bg-white/40 backdrop-blur-md rounded-[2.5rem] border border-white overflow-hidden shadow-sm">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-gray-100">
+                  <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-400">User</th>
+                  {activeTab === 'members' && <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-400">Username</th>}
+                  <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-400">Role</th>
+                  {activeTab === 'members' && <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-400 text-right">Actions</th>}
                 </tr>
-              )
-            ) : (
-              // INVITATIONS VIEW
-              invitations.length > 0 ? (
-                invitations.map((inv) => (
-                  <tr key={inv.id} className="group hover:bg-white/50 transition-colors">
-                    <td className="px-8 py-5">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
-                          <Mail size={16} />
-                        </div>
-                        <p className="text-sm font-bold text-[#0F1F1F]">{inv.email}</p>
-                      </div>
-                    </td>
-                    <td className="px-8 py-5 italic text-gray-400 text-xs">
-                      Pending acceptance...
-                    </td>
-                    <td className="px-8 py-5">
-                      <div className="flex items-center gap-1.5 bg-blue-50 w-fit px-3 py-1 rounded-full">
-                        <span className="text-[10px] font-black uppercase tracking-tight text-blue-600">{inv.role}</span>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={3} className="px-8 py-12 text-center text-sm text-gray-400 italic">
-                    No pending invitations.
-                  </td>
-                </tr>
-              )
-            )}
-          </tbody>
-        </table>
-      </div>
-    </section>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {activeTab === 'members' ? (
+                  employees.length > 0 ? (
+                    employees.map((emp) => {
+                      const hasPermission = canManage(currentUserRole, emp.role || 'viewer');
+                      const isSelf = emp.user_id === userId;
+
+                      return (
+                        <tr key={emp.user_id} className="group hover:bg-white/50 transition-colors">
+                            <td className="px-8 py-5">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm uppercase">
+                                {emp.fullname.charAt(0)}
+                                </div>
+                                <div>
+                                <p className="text-sm font-bold text-[#0F1F1F]">{emp.fullname}</p>
+                                <p className="text-xs text-gray-400">{emp.email}</p>
+                                </div>
+                            </div>
+                            </td>
+                            <td className="px-8 py-5">
+                            <span className="text-xs font-bold text-[#0F1F1F]">@{emp.user_name}</span>
+                            </td>
+                            <td className="px-8 py-5">
+                            <div className="flex items-center gap-1.5 bg-primary/10 w-fit px-3 py-1 rounded-full">
+                                <span className="text-[10px] font-extrabold uppercase text-primary">{emp.role || 'Member'}</span>
+                            </div>
+                            </td>
+                            <td className="px-8 py-5 text-right">
+                                {hasPermission && !isSelf && (
+                                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button 
+                                            onClick={() => openEditRole(emp)}
+                                            className="p-2 hover:bg-blue-50 text-gray-400 hover:text-blue-600 rounded-lg transition-colors"
+                                            title="Edit Role"
+                                        >
+                                            <Edit2 size={16} />
+                                        </button>
+                                        <button 
+                                            onClick={() => openDeleteMember(emp)}
+                                            className="p-2 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-lg transition-colors"
+                                            title="Remove Member"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                )}
+                            </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan={4} className="px-8 py-12 text-center text-sm text-gray-400 italic">
+                        No members found in this organization.
+                      </td>
+                    </tr>
+                  )
+                ) : (
+                  inviteesInfo?.length && inviteesInfo.length > 0 ? (
+                    inviteesInfo?.map((inv) => (
+                      <tr key={inv.invite_id} className="group hover:bg-white/50 transition-colors">
+                        <td className="px-8 py-5">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
+                              <Mail size={16} />
+                            </div>
+                            <p className="text-sm font-bold text-[#0F1F1F]">{inv.email}</p>
+                          </div>
+                        </td>
+                        
+                        <td colSpan={2} className="px-8 py-5">
+                          <div className="flex items-center gap-1.5 bg-blue-50 w-fit px-3 py-1 rounded-full">
+                            <span className="text-[10px] font-black uppercase tracking-tight text-blue-600">{inv.role}</span>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={3} className="px-8 py-12 text-center text-sm text-gray-400 italic">
+                        No pending invitations.
+                      </td>
+                    </tr>
+                  )
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
       </div>
       )}
 
@@ -513,46 +558,93 @@ const SettingsPage = () => {
       </Modal>
 
       <Modal 
-  isOpen={isInviteModalOpen} 
-  onClose={() => setIsInviteModalOpen(false)} 
-  title="Invite Team Member"
->
-  <div className="space-y-8">
-    <p className="text-sm text-gray-500">
-      Send an invitation email to a new user to grant them access to <strong>{org?.org_name}</strong>.
-    </p>
+        isOpen={isInviteModalOpen} 
+        onClose={() => setIsInviteModalOpen(false)} 
+        title="Invite Team Member"
+        >
+        <div className="space-y-8">
+            <p className="text-sm text-gray-500">
+            Send an invitation email to a new user to grant them access to <strong>{org?.org_name}</strong>.
+            </p>
 
-    <div className="space-y-6">
-      {/* Email Input */}
-      <InputField 
-        label="Email Address" 
-        placeholder="colleague@example.com" 
-        type="email" 
-        value={inviteForm.email}
-        onChange={(e) => setInviteForm({...inviteForm, email: e.target.value})}
-      />
+            <div className="space-y-6">
+            <InputField 
+                label="Email Address" 
+                placeholder="colleague@example.com" 
+                type="email" 
+                value={inviteForm.email}
+                onChange={(e) => setInviteForm({...inviteForm, email: e.target.value})}
+            />
 
-      {/* Role Selection */}
-      <SelectField 
-        label="Assign Role"
-        placeholder="Select a role..."
-        options={ROLE_OPTIONS}
-        value={inviteForm.role}
-        onChange={(val) => setInviteForm({...inviteForm, role: val})}
-        // If your inviteUserMutation or a local state has validation errors:
-        error={inviteForm.email && !inviteForm.role ? "Please select a role" : ""}
-      />
-    </div>
+            <SelectField 
+                label="Assign Role"
+                placeholder="Select a role..."
+                options={ROLE_OPTIONS}
+                value={inviteForm.role}
+                onChange={(val) => setInviteForm({...inviteForm, role: val})}
+                error={inviteForm.email && !inviteForm.role ? "Please select a role" : ""}
+            />
+            </div>
 
-    <Button 
-      className="w-full bg-primary py-4 mt-4" 
-      onClick={handleInvite}
-      disabled={inviteUserMutation.isPending || !inviteForm.email || !inviteForm.role}
-    >
-      {inviteUserMutation.isPending ? 'Sending...' : 'Send Invitation'}
-    </Button>
-  </div>
-</Modal>
+            <Button 
+            className="w-full bg-primary py-4 mt-4" 
+            onClick={handleInvite}
+            disabled={inviteUserMutation.isPending || !inviteForm.email || !inviteForm.role}
+            >
+            {inviteUserMutation.isPending ? 'Sending...' : 'Send Invitation'}
+            </Button>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={isEditRoleOpen}
+        onClose={() => setIsEditRoleOpen(false)}
+        title="Update User Role"
+        onSave={handleUpdateRole}
+        saveLabel="Update Role"
+        // isLoading={updateMemberRoleMutation.isPending}
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-gray-500">
+            Changing the role for <strong className="text-black">{selectedMember?.fullname}</strong>.
+          </p>
+          <SelectField
+            label="Select Role"
+            options={ROLE_OPTIONS}
+            value={newRole}
+            onChange={setNewRole}
+          />
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={isDeleteOpen}
+        onClose={() => setIsDeleteOpen(false)}
+        title="Remove Team Member"
+      >
+        <div className="space-y-6">
+           <div className="flex items-start gap-4 bg-red-50 p-4 rounded-xl border border-red-100">
+              <AlertCircle className="text-red-500 w-6 h-6 shrink-0" />
+              <div>
+                <h4 className="text-sm font-bold text-red-800">Are you sure?</h4>
+                <p className="text-xs text-red-600 mt-1">
+                  This action will permanently remove <strong className='text-red-900'>{selectedMember?.fullname}</strong> from the organization. They will lose all access immediately.
+                </p>
+              </div>
+           </div>
+
+           <div className="flex gap-3 justify-end pt-2">
+             <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
+             <Button 
+               className="bg-red-500 hover:bg-red-600 text-white" 
+               onClick={handleRemoveMember}
+              //  isLoading={removeMemberMutation.isPending}
+             >
+               Remove Member
+             </Button>
+           </div>
+        </div>
+      </Modal>
 
     </div>
   );

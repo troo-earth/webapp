@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router"; 
+import { useNavigate, useSearch } from "@tanstack/react-router"; 
 import { loginApi, onboardingApi, registerApi, uploadLogoApi, uploadProofApi } from "../api/authApi";
 import { authQueries } from "../query/authQuery";
 import { notify } from "@/components/global/Toast";
@@ -9,17 +9,24 @@ import type { OnboardingParams } from "../types/authTypes";
 export const useRegister = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  
+  const search = useSearch({ from: '/(public)/register' }); 
+  const inviteToken = search['invite-token'] || undefined;
 
   return useMutation({
     mutationFn: registerApi,
     onSuccess: (data) => {
       queryClient.setQueryData(authQueries.me().queryKey, data);
-      navigate({ to: '/onboarding', replace: true });
       notify.success("User Registered successfully");
 
+      if (inviteToken) {
+        navigate({ to: '/explore', replace: true });
+      } else {
+        navigate({ to: '/onboarding', replace: true });
+      }
     },
-    onError: () => {
-      notify.error("Registration failed");
+    onError: (error) => {
+      console.error("Registration error:", error);
     }
   });
 };
@@ -43,8 +50,6 @@ export const useLogin = () => {
 
 
 export const useOnboarding = () => {
-  const navigate = useNavigate();
-
   return useMutation({
     mutationFn: async ({ formData, logoFile, proofFile }: OnboardingParams) => {
       if (!logoFile || !proofFile) throw new Error("Files are missing");
@@ -66,7 +71,6 @@ export const useOnboarding = () => {
     },
     onSuccess: () => {
       notify.success("Organization onboarded successfully");
-      navigate({ to: '/explore', replace: true });
     },
     onError: (error) => {
       notify.error("Organization onboarding failed");
