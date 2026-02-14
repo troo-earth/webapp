@@ -4,10 +4,13 @@ import BgGradient from '../ui/global/BgGradient'
 import { Header } from '../global/Header'
 import Sidebar from '../global/Sidebar'
 import { AlertCircle, ArrowRight } from 'lucide-react' 
+import { authQueries } from '@/features/auth/query/authQuery'
+import { useQuery } from '@tanstack/react-query'
 
 const DashboardLayout = () => {
-  const { user } = useRouteContext({ from: '/_authenticated' });
-  const isRestricted = !user?.org_id;
+  const { data: user } = useQuery(authQueries.me());
+
+  const isRestricted = !user?.org_id ;
 
   return (
     <div className="flex h-screen w-full bg-(--background-image-main-gradient) overflow-hidden font-nunito">      
@@ -15,7 +18,6 @@ const DashboardLayout = () => {
       <main className="flex-1 h-full flex flex-col relative">
         <Header/>
         
-        {/* Onboarding Banner */}
         <AnimatePresence>
           {isRestricted && (
             <motion.div 
@@ -51,11 +53,9 @@ const DashboardLayout = () => {
           <motion.div 
             className="h-full w-full bg-white/80 backdrop-blur-md rounded-3xl shadow-xl shadow-teal-900/5 border border-white flex flex-col relative overflow-hidden"
           >
-            {/* THE VEIL: Prevents clicks but allows scroll via pointer-events-none on parent + pointer-events-auto on content */}
             <div className="flex-1 overflow-y-auto p-2 custom-scrollbar relative" id="main-scrollable-area">
               <BgGradient/>
               
-              {/* This div catches all clicks if isRestricted is true */}
               {isRestricted && (
                 <div 
                   className="absolute inset-0 z-50 cursor-not-allowed"

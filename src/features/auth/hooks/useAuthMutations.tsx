@@ -4,6 +4,7 @@ import { loginApi, onboardingApi, registerApi, uploadLogoApi, uploadProofApi } f
 import { authQueries } from "../query/authQuery";
 import { notify } from "@/components/global/Toast";
 import type { OnboardingParams } from "../types/authTypes";
+import { acceptInviteApi } from "@/shared/invitations/api/inviteApi";
 
 
 export const useRegister = (options?: { 
@@ -12,15 +13,38 @@ export const useRegister = (options?: {
 }) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  
+
+  const search = useSearch({ strict: false }); 
+  const inviteToken = String(search?.invite_token || '');
 
   return useMutation({
     mutationFn: registerApi,
     onMutate: () => options?.onMutate?.(),
     onSettled: () => options?.onSettled?.(),
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       queryClient.setQueryData(authQueries.me().queryKey, data);
       notify.success("User Registered successfully");
-      // Logic for inviteToken check here to skip onboarding
+
+      if (inviteToken) {
+        try {
+          const response = await acceptInviteApi({token: inviteToken});
+          const org = response?.data
+          await queryClient.invalidateQueries({ queryKey: authQueries.me().queryKey });
+          notify.success(`Joined ${org?.org_name} as a ${org?.role} successfully!`);
+          navigate({ 
+            to: '/explore', 
+            search: { invite: 'success' },
+            replace: true 
+          });
+          return; 
+        } catch (error: any) {
+          notify.error(error?.response?.data?.message || "Failed to join organization");
+          navigate({ to: '/onboarding', replace: true });
+          return;
+        }
+      }
+
       navigate({ to: '/onboarding', replace: true });
     },
     onError: (error: any) => {
@@ -35,6 +59,9 @@ export const useLogin = (options?: {
 }) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  
+  const search = useSearch({ strict: false });
+  const inviteToken = search?.invite_token;
 
   return useMutation({
     mutationFn: loginApi,
@@ -44,9 +71,28 @@ export const useLogin = (options?: {
     onSettled: () => {
       options?.onSettled?.();
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       queryClient.setQueryData(authQueries.me().queryKey, data);
       notify.success("Logged In successfully");
+
+      if (inviteToken) {
+        try {
+          const response = await acceptInviteApi({token: inviteToken});
+          const org = response?.data
+         
+          notify.success(`Joined ${org?.org_name} as a ${org?.role} successfully!`);
+          await queryClient.invalidateQueries({ queryKey: authQueries.me().queryKey });
+          navigate({ 
+            to: '/explore', 
+            replace: true 
+          });
+          return; 
+        } catch (error: any) {
+          const errMsg = error?.response?.data?.message || "Failed to join organization";
+          notify.error(errMsg);
+        }
+      }
+
       navigate({ to: '/explore', replace: true });
     },
     onError: (error: any) => {

@@ -1,5 +1,6 @@
 import type { InvitationsResponse, Invitees, InviteUser } from "@/features/settings/types/settingsType";
 import { api } from "@/lib/axiosConfig";
+import type { InviteData } from "@/types/global/types";
 import { handleError } from "@/utils/utils";
 
 
@@ -22,6 +23,18 @@ export const inviteUserApi = async (payload: InviteUser): Promise<void> => {
     );
   } catch (error: unknown) {
     throw new Error(handleError(error, "Failed to send invitation."));
+  }
+};
+
+export const acceptInviteApi = async (payload: { token: string }): Promise<InviteData> => {
+  try {
+    const response = await api.post<InviteData>(
+      '/invitations/accept-invite', 
+      payload
+    );
+    return response.data;
+  } catch (error: unknown) {
+    throw new Error(handleError(error, "Failed to accept invitation."));
   }
 };
 

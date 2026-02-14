@@ -138,9 +138,7 @@ const SettingsPage = () => {
       logo_url: orgForm.logoUrl   
     }, {
       onSuccess: () => {
-        notify.success("Organization updated successfully");
         setIsOrgModalOpen(false); 
-        queryClient.invalidateQueries({ queryKey: settingsQueries.viewOrgInfo().queryKey });
       }
     });
   };
@@ -169,10 +167,8 @@ const SettingsPage = () => {
 
     inviteUserMutation.mutate(inviteForm, {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: inviteQueries.viewOrgInvitees().queryKey });
         setIsInviteModalOpen(false);
         setInviteForm(prev => ({ ...prev, email: '', role: '' }));
-        notify.success("Invitation sent!");
       }
     });
   };
@@ -182,7 +178,6 @@ const SettingsPage = () => {
     resendInviteMutation.mutate({ email: selectedInvite.email }, {
       onSuccess: () => {
         setIsResendModalOpen(false);
-        notify.success("Invitation resent successfully");
       }
     });
   };
@@ -192,8 +187,6 @@ const SettingsPage = () => {
     revokeInviteMutation.mutate({ email: selectedInvite.email }, {
       onSuccess: () => {
         setIsRevokeModalOpen(false);
-        queryClient.invalidateQueries({ queryKey: inviteQueries.viewOrgInvitees().queryKey });
-        notify.success("Invitation revoked");
       }
     });
   };
@@ -205,9 +198,7 @@ const SettingsPage = () => {
       role: newRole
     }, {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: settingsQueries.viewOrgInfo().queryKey });
         setIsEditRoleOpen(false);
-        notify.success("Role updated successfully");
       }
     });
   };
@@ -216,9 +207,7 @@ const SettingsPage = () => {
     if (!selectedMember) return;
     removeUserMutation.mutate(selectedMember.user_id, {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: settingsQueries.viewOrgInfo().queryKey });
         setIsDeleteOpen(false);
-        notify.success("Member removed successfully");
       }
     });
   };
@@ -302,7 +291,7 @@ const SettingsPage = () => {
               <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Manage team roles and permissions</p>
             </div>
             <div className="flex gap-3">
-              {getManageableRoles().length > 0 && (
+              {canSeeInvitations && (
                 <Button 
                     className="bg-[#0F1F1F] text-white px-5 py-2.5 rounded-2xl flex items-center gap-2 text-sm font-bold hover:opacity-90 transition-all shadow-lg shadow-black/5"
                     onClick={() => setIsInviteModalOpen(true)}
@@ -324,7 +313,7 @@ const SettingsPage = () => {
               {activeTab === 'members' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-full" />}
             </button>
             
-            {canSeeInvitations && (
+            {canSeeInvitations && pendingInvitations.length > 0 && (
               <button 
                 onClick={() => setActiveTab('invitations')}
                 className={`pb-4 text-sm font-black uppercase tracking-widest transition-all relative flex items-center gap-2 ${

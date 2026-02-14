@@ -24,7 +24,7 @@ const SuccessOverlay = ({ onComplete }: SuccessOverlayProps) => {
     }, [onComplete]);
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-black/20 backdrop-blur-sm">
+        <div className="fixed inset-0 z-99999 flex items-center justify-center overflow-hidden bg-black/20 backdrop-blur-sm">
             
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div className="w-25 h-25 rounded-full animate-expand-screen bg-[radial-gradient(circle_at_center,#051F1F_0%,#020C0C_100%)]"></div>

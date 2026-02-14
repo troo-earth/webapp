@@ -8,13 +8,12 @@ import { onboardingSchema } from '../../utils/authSchema';
 import { COUNTRY_OPTIONS } from '@/lib/constants';
 import { SelectField } from '@/components/ui/input/SelectField';
 import { useOnboarding } from '../../hooks/useAuthMutations';
-import SuccessOverlay from './SuccessOverlay';
 
 interface OnboardingModalProps {
   onSuccess: () => void;
 }
 
-export const OnboardingModal: React.FC<OnboardingModalProps> = () => {
+export const OnboardingModal: React.FC<OnboardingModalProps> = ({onSuccess}) => {
 
   const navigate = useNavigate();
   const { mutate, isPending } = useOnboarding();
@@ -27,12 +26,6 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = () => {
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isSuccess, setIsSuccess] = useState(false);
-
-
-  const handleAnimationComplete = () => {
-    navigate({ to: '/explore', replace: true });
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,7 +56,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = () => {
         proofFile: result.data.proof 
     }, {
         onSuccess: () => {
-            setIsSuccess(true);
+            onSuccess()
         }
     });
   };
@@ -75,9 +68,6 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = () => {
     }
   };
 
-  if (isSuccess) {
-      return <SuccessOverlay onComplete={handleAnimationComplete} />;
-  }
 
   return (
     <div className="relative w-full max-w-4xl bg-white/60 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-[0_40px_100px_-20px_rgba(0,116,115,0.08)] border border-white/80 overflow-hidden">
