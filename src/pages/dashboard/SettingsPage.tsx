@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Building2, UserPlus, LogOut, Camera, CheckCircle2, Copy, 
-  Shield, Mail, Edit2, Trash2, AlertCircle, RotateCcw, XCircle
+  Building2, UserPlus, Camera, CheckCircle2, Copy, 
+  Mail, Edit2, Trash2, AlertCircle, RotateCcw, XCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/buttons/Button';
 import { InputField } from '@/components/ui/input/InputField';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { settingsQueries } from '@/features/settings/query/settingsQueries';
 import LoadingScreen from '@/components/global/Loading';
 import { Modal } from '@/components/global/Modal';
@@ -31,7 +31,6 @@ const SettingsPage = () => {
   const { user } = useRouteContext({ from: '/_authenticated' });
   const isRestricted = !user?.org_id;
   const currentUserRole = user?.role;
-  const queryClient = useQueryClient();
 
   // Role visibility logic
   const canSeeInvitations = currentUserRole === 'admin' || currentUserRole === 'superadmin';
@@ -512,7 +511,13 @@ const SettingsPage = () => {
 
       {/* Update Role Modal */}
       <Modal isOpen={isEditRoleOpen} onClose={() => setIsEditRoleOpen(false)} title="Update User Role" onSave={handleUpdateRole} saveLabel="Update Role" isLoading={updateUserRoleMutation.isPending}>
-          <SelectField label="Select New Role" options={getManageableRoles()} value={newRole} onChange={setNewRole} />
+          <SelectField 
+            label="Select New Role" 
+            options={getManageableRoles()} 
+            value={newRole} 
+            // Cast the incoming string to your specific type
+            onChange={(val) => setNewRole(val as "admin" | "manager" | "viewer")} 
+          />
       </Modal>
 
       {/* Delete Confirmation Modal */}

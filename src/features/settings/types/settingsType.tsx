@@ -3,6 +3,7 @@ export interface Employee {
   fullname: string;
   email: string;
   user_name: string;
+  role: 'admin' | 'manager' | 'viewer';
 }
 
 export interface OrganizationData {
