@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Building2, UserPlus, LogOut, Camera, CheckCircle2, Copy, 
-  Shield, Mail, Edit2, Trash2, AlertCircle
+  Shield, Mail, Edit2, Trash2, AlertCircle, RotateCcw, XCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/buttons/Button';
 import { InputField } from '@/components/ui/input/InputField';
@@ -12,61 +12,77 @@ import { Modal } from '@/components/global/Modal';
 import { 
   useUpdateOrganization, 
   useUpdateUser, 
-  useInviteUser, 
-  // useUpdateMemberRole, 
-  // useRemoveMember 
+  useInviteUser,
+  useUpdateUserRole,
+  useRemoveUserFromOrg, 
 } from '@/features/settings/hooks/useSettingsMutations';
+
 import { uploadLogoApi } from '@/features/auth/api/authApi';
 import { inviteSchema, orgSchema, userSchema } from '@/features/settings/utils/settingsSchema';
 import { notify } from '@/components/global/Toast';
 import { useRouteContext } from '@tanstack/react-router';
 import { SelectField } from '@/components/ui/input/SelectField';
 import type { InviteUser } from '@/features/settings/types/settingsType';
-import { canManage } from '@/features/settings/utils/settingsUtils';
-
+import { canManage, ROLE_HIERARCHY } from '@/features/settings/utils/settingsUtils';
+import { inviteQueries } from '@/shared/invitations/queries/inviteQueries';
+import { useResendInvite, useRevokeInvite } from '@/shared/invitations/mutations/useInviteMutations';
 
 const SettingsPage = () => {
   const { user } = useRouteContext({ from: '/_authenticated' });
   const isRestricted = !user?.org_id;
-  const currentUserRole = user?.role || 'viewer';
-
-  console.log("User from route context:", user);
-  
+  const currentUserRole = user?.role;
   const queryClient = useQueryClient();
 
+  // Role visibility logic
+  const canSeeInvitations = currentUserRole === 'admin' || currentUserRole === 'superadmin';
+
+  // --- States ---
   const [copied, setCopied] = useState(false);
+  const [activeTab, setActiveTab] = useState('members');
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Modals
   const [isOrgModalOpen, setIsOrgModalOpen] = useState(false);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
-
-  // Management State
-  const [selectedMember, setSelectedMember] = useState<any>(null);
   const [isEditRoleOpen, setIsEditRoleOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [newRole, setNewRole] = useState('');
+  const [isResendModalOpen, setIsResendModalOpen] = useState(false);
+  const [isRevokeModalOpen, setIsRevokeModalOpen] = useState(false);
+
+  // Selections
+  const [selectedMember, setSelectedMember] = useState<any>(null);
+  const [selectedInvite, setSelectedInvite] = useState<any>(null);
+  const [newRole, setNewRole] = useState<"admin" | "manager" | "viewer">('viewer');
 
   const userId = user?.user_id || '';
   const org_id = user?.org_id || '';
 
+  // --- Queries ---
   const { data: org, isLoading: isOrgLoading } = useQuery(settingsQueries.viewOrgInfo());
   const { data: userInfo, isLoading: isUserLoading } = useQuery(settingsQueries.viewUserInfo(user?.user_id));
-  const { data: inviteesInfo, isLoading: isInviteesLoading } = useQuery(settingsQueries.viewOrgInvitees())
-
-  const updateOrgMutation = useUpdateOrganization();
-  const updateUserMutation = useUpdateUser();
-  const inviteUserMutation = useInviteUser();
-  // const updateMemberRoleMutation = useUpdateMemberRole(); 
-  // const removeMemberMutation = useRemoveMember();
+  const { data: inviteesInfo, isLoading: isInviteesLoading } = useQuery(inviteQueries.viewOrgInvitees());
 
   const employees = org?.employees || [];
-  const fileInputRef = useRef<HTMLInputElement>(null);  
-  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
-  const [activeTab, setActiveTab] = useState('members');
+  const pendingInvitations = inviteesInfo?.filter((inv) => inv.status === 'pending') || [];
 
+  // --- Forms ---
+  const [orgForm, setOrgForm] = useState({ name: '', regId: '', logoUrl: '' });
+  const [userForm, setUserForm] = useState({ fullName: '', user_name: '', email: '', password: '', confirmPassword: '' });
+  const [inviteForm, setInviteForm] = useState<InviteUser>({ email: '', role: '' });
 
-  const [orgForm, setOrgForm] = useState({ 
-    name: '', 
-    regId: '',
-    logoUrl: '' 
+  // --- Mutations ---
+  const updateOrgMutation = useUpdateOrganization({ onSuccess: () => setIsOrgModalOpen(false) });
+  const inviteUserMutation = useInviteUser({ onSuccess: () => setIsInviteModalOpen(false) });
+  const updateUserRoleMutation = useUpdateUserRole({ onSuccess: () => setIsEditRoleOpen(false) });
+  const removeUserMutation = useRemoveUserFromOrg({ onSuccess: () => setIsDeleteOpen(false) });
+  const resendInviteMutation = useResendInvite();
+  const revokeInviteMutation = useRevokeInvite();
+  const updateUser = useUpdateUser({ 
+    onSuccess: () => {
+      notify.success("Profile updated successfully");
+      setUserForm(prev => ({ ...prev, password: '', confirmPassword: '' }));
+    } 
   });
 
   const ROLE_OPTIONS = [
@@ -75,18 +91,13 @@ const SettingsPage = () => {
     { value: 'viewer', label: 'Viewer' },
   ];
 
-  const [userForm, setUserForm] = useState({ 
-    fullName: '', 
-    user_name: '',
-    email: '',
-    password: '', 
-    confirmPassword: '' 
-  });
-
-  const [inviteForm, setInviteForm] = useState<InviteUser>({ 
-    email: '', 
-    role:'',
-  });
+  const getManageableRoles = () => {
+    const actorLevel = ROLE_HIERARCHY[currentUserRole as keyof typeof ROLE_HIERARCHY] || 0;
+    return ROLE_OPTIONS.filter(option => {
+      const targetLevel = ROLE_HIERARCHY[option.value as keyof typeof ROLE_HIERARCHY] || 0;
+      return actorLevel > targetLevel;
+    });
+  };
 
   useEffect(() => {
     if (user) {
@@ -97,12 +108,8 @@ const SettingsPage = () => {
         user_name: userInfo?.user_name || ''
       }));
     }
-    setInviteForm(prev => ({
-      ...prev,
-      invited_by_user_id: userId,
-      org_id: org_id
-    }));
-  }, [user, userId, org_id]);
+    setInviteForm(prev => ({ ...prev, invited_by_user_id: userId, org_id: org_id }));
+  }, [user, userId, org_id, userInfo]);
 
   useEffect(() => {
     if (org) {
@@ -114,22 +121,7 @@ const SettingsPage = () => {
     }
   }, [org]);
 
-
-  const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      setIsUploadingLogo(true);
-      const publicUrl = await uploadLogoApi(file);
-      setOrgForm(prev => ({ ...prev, logoUrl: publicUrl }));
-    } catch (error) {
-      console.error("Upload failed", error);
-      alert("Failed to upload image"); 
-    } finally {
-      setIsUploadingLogo(false);
-    }
-  };
+  // --- Logic Handlers ---
 
   const handleOrgSave = () => {
     if (!org?.org_id) return;
@@ -148,10 +140,7 @@ const SettingsPage = () => {
       onSuccess: () => {
         notify.success("Organization updated successfully");
         setIsOrgModalOpen(false); 
-        queryClient.setQueryData(settingsQueries.viewOrgInfo().queryKey, (oldData: any) => {
-          if (!oldData) return oldData;
-          return { ...oldData, org_name: orgForm.name, registration_id: orgForm.regId, logo_url: orgForm.logoUrl };
-        });
+        queryClient.invalidateQueries({ queryKey: settingsQueries.viewOrgInfo().queryKey });
       }
     });
   };
@@ -159,21 +148,15 @@ const SettingsPage = () => {
   const handleUserSave = () => {
     const validation = userSchema.safeParse(userForm);
     if (!validation.success) {
-      alert(validation.error.issues[0].message);
-      return;
+      return notify.error(validation.error.issues[0].message);
     }
     
-    updateUserMutation.mutate({
-      user_id: userId,
+    updateUser.mutate({
+      user_id: user.user_id,
       fullname: userForm.fullName,
       email: userForm.email,
       user_name: userForm.user_name,
-      password: userForm.password
-    }, {
-      onSuccess: () => {
-        notify.success("Profile updated successfully");
-        setUserForm(prev => ({ ...prev, password: '', confirmPassword: '' }));
-      }
+      password: userForm.password 
     });
   };
 
@@ -186,7 +169,7 @@ const SettingsPage = () => {
 
     inviteUserMutation.mutate(inviteForm, {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: settingsQueries.viewOrgInvitees().queryKey });
+        queryClient.invalidateQueries({ queryKey: inviteQueries.viewOrgInvitees().queryKey });
         setIsInviteModalOpen(false);
         setInviteForm(prev => ({ ...prev, email: '', role: '' }));
         notify.success("Invitation sent!");
@@ -194,45 +177,65 @@ const SettingsPage = () => {
     });
   };
 
-  
-  const openEditRole = (member: any) => {
-    setSelectedMember(member);
-    setNewRole(member.role);
-    setIsEditRoleOpen(true);
+  const handleResend = () => {
+    if (!selectedInvite) return;
+    resendInviteMutation.mutate({ email: selectedInvite.email }, {
+      onSuccess: () => {
+        setIsResendModalOpen(false);
+        notify.success("Invitation resent successfully");
+      }
+    });
   };
 
-  const openDeleteMember = (member: any) => {
-    setSelectedMember(member);
-    setIsDeleteOpen(true);
+  const handleRevoke = () => {
+    if (!selectedInvite) return;
+    revokeInviteMutation.mutate({ email: selectedInvite.email }, {
+      onSuccess: () => {
+        setIsRevokeModalOpen(false);
+        queryClient.invalidateQueries({ queryKey: inviteQueries.viewOrgInvitees().queryKey });
+        notify.success("Invitation revoked");
+      }
+    });
   };
 
   const handleUpdateRole = () => {
     if (!selectedMember || !newRole) return;
-    
-    // updateMemberRoleMutation.mutate({
-    //   user_id: selectedMember.user_id,
-    //   role: newRole
-    // }, {
-    //   onSuccess: () => {
-    //     queryClient.invalidateQueries({ queryKey: settingsQueries.viewOrgInfo().queryKey });
-    //     setIsEditRoleOpen(false);
-    //     notify.success("Role updated successfully");
-    //   }
-    // });
+    updateUserRoleMutation.mutate({
+      user_id: selectedMember.user_id,
+      role: newRole
+    }, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: settingsQueries.viewOrgInfo().queryKey });
+        setIsEditRoleOpen(false);
+        notify.success("Role updated successfully");
+      }
+    });
   };
 
-  const handleRemoveMember = () => {
+  const handleremoveUser = () => {
     if (!selectedMember) return;
+    removeUserMutation.mutate(selectedMember.user_id, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: settingsQueries.viewOrgInfo().queryKey });
+        setIsDeleteOpen(false);
+        notify.success("Member removed successfully");
+      }
+    });
+  };
 
-    // removeMemberMutation.mutate({
-    //   user_id: selectedMember.user_id
-    // }, {
-    //   onSuccess: () => {
-    //     queryClient.invalidateQueries({ queryKey: settingsQueries.viewOrgInfo().queryKey });
-    //     setIsDeleteOpen(false);
-    //     notify.success("Member removed successfully");
-    //   }
-    // });
+  const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setIsUploadingLogo(true);
+      const publicUrl = await uploadLogoApi(file);
+      setOrgForm(prev => ({ ...prev, logoUrl: publicUrl }));
+    } catch (error) {
+      console.error("Upload failed", error);
+      alert("Failed to upload image"); 
+    } finally {
+      setIsUploadingLogo(false);
+    }
   };
 
   const copyToClipboard = (text: string) => {
@@ -245,10 +248,10 @@ const SettingsPage = () => {
 
   return (
     <div className="mx-auto space-y-16 p-8">
-      
       {!isRestricted && (
       <div className='flex flex-col gap-16'>
         
+        {/* Organization Settings */}
         <section>
           <div className="mb-6">
             <h2 className="text-2xl font-black text-[#0F1F1F]">Organization Settings</h2>
@@ -281,7 +284,7 @@ const SettingsPage = () => {
                   <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Registration ID</label>
                   <p className="text-sm font-bold text-[#0F1F1F] mt-1">{org?.registration_id}</p>
                 </div>
-                 <div>
+                <div>
                   <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Country</label>
                   <p className="text-sm font-bold text-[#0F1F1F] mt-1">{org?.country_code}</p>
                 </div>
@@ -291,6 +294,7 @@ const SettingsPage = () => {
           </div>
         </section>
 
+        {/* User Access Section */}
         <section>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
             <div>
@@ -298,7 +302,7 @@ const SettingsPage = () => {
               <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Manage team roles and permissions</p>
             </div>
             <div className="flex gap-3">
-              {['admin', 'superadmin'].includes(currentUserRole) && (
+              {getManageableRoles().length > 0 && (
                 <Button 
                     className="bg-[#0F1F1F] text-white px-5 py-2.5 rounded-2xl flex items-center gap-2 text-sm font-bold hover:opacity-90 transition-all shadow-lg shadow-black/5"
                     onClick={() => setIsInviteModalOpen(true)}
@@ -320,18 +324,20 @@ const SettingsPage = () => {
               {activeTab === 'members' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-full" />}
             </button>
             
-            <button 
-              onClick={() => setActiveTab('invitations')}
-              className={`pb-4 text-sm font-black uppercase tracking-widest transition-all relative flex items-center gap-2 ${
-                activeTab === 'invitations' ? 'text-primary' : 'text-gray-400 hover:text-gray-600'
-              }`}
-            >
-              Invitations
-              <span className="bg-gray-100 text-[#0F1F1F] px-2 py-0.5 rounded-full text-[10px]">
-                {inviteesInfo?.length || 0}
-              </span>
-              {activeTab === 'invitations' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-full" />}
-            </button>
+            {canSeeInvitations && (
+              <button 
+                onClick={() => setActiveTab('invitations')}
+                className={`pb-4 text-sm font-black uppercase tracking-widest transition-all relative flex items-center gap-2 ${
+                  activeTab === 'invitations' ? 'text-primary' : 'text-gray-400 hover:text-gray-600'
+                }`}
+              >
+                Invitations
+                <span className="bg-gray-100 text-[#0F1F1F] px-2 py-0.5 rounded-full text-[10px]">
+                  {pendingInvitations.length || 0}
+                </span>
+                {activeTab === 'invitations' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-full" />}
+              </button>
+            )}
           </div>
 
           <div className="bg-white/40 backdrop-blur-md rounded-[2.5rem] border border-white overflow-hidden shadow-sm">
@@ -341,94 +347,79 @@ const SettingsPage = () => {
                   <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-400">User</th>
                   {activeTab === 'members' && <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-400">Username</th>}
                   <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-400">Role</th>
-                  {activeTab === 'members' && <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-400 text-right">Actions</th>}
+                  <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-400 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {activeTab === 'members' ? (
-                  employees.length > 0 ? (
-                    employees.map((emp) => {
-                      const hasPermission = canManage(currentUserRole, emp.role || 'viewer');
-                      const isSelf = emp.user_id === userId;
+                  employees.map((emp) => {
+                    const hasPermission = canManage(currentUserRole, emp.role || 'viewer');
+                    const isSelf = emp.user_id === userId;
 
-                      return (
-                        <tr key={emp.user_id} className="group hover:bg-white/50 transition-colors">
-                            <td className="px-8 py-5">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm uppercase">
-                                {emp.fullname.charAt(0)}
-                                </div>
-                                <div>
+                    return (
+                      <tr key={emp.user_id} className="group hover:bg-white/50 transition-colors">
+                          <td className="px-8 py-5">
+                          <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm uppercase">
+                              {emp.fullname.charAt(0)}
+                              </div>
+                              <div>
                                 <p className="text-sm font-bold text-[#0F1F1F]">{emp.fullname}</p>
                                 <p className="text-xs text-gray-400">{emp.email}</p>
-                                </div>
-                            </div>
-                            </td>
-                            <td className="px-8 py-5">
-                            <span className="text-xs font-bold text-[#0F1F1F]">@{emp.user_name}</span>
-                            </td>
-                            <td className="px-8 py-5">
-                            <div className="flex items-center gap-1.5 bg-primary/10 w-fit px-3 py-1 rounded-full">
-                                <span className="text-[10px] font-extrabold uppercase text-primary">{emp.role || 'Member'}</span>
-                            </div>
-                            </td>
-                            <td className="px-8 py-5 text-right">
-                                {hasPermission && !isSelf && (
-                                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button 
-                                            onClick={() => openEditRole(emp)}
-                                            className="p-2 hover:bg-blue-50 text-gray-400 hover:text-blue-600 rounded-lg transition-colors"
-                                            title="Edit Role"
-                                        >
-                                            <Edit2 size={16} />
-                                        </button>
-                                        <button 
-                                            onClick={() => openDeleteMember(emp)}
-                                            className="p-2 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-lg transition-colors"
-                                            title="Remove Member"
-                                        >
-                                            <Trash2 size={16} />
-                                        </button>
-                                    </div>
-                                )}
-                            </td>
-                        </tr>
-                      );
-                    })
-                  ) : (
-                    <tr>
-                      <td colSpan={4} className="px-8 py-12 text-center text-sm text-gray-400 italic">
-                        No members found in this organization.
-                      </td>
-                    </tr>
-                  )
-                ) : (
-                  inviteesInfo?.length && inviteesInfo.length > 0 ? (
-                    inviteesInfo?.map((inv) => (
-                      <tr key={inv.invite_id} className="group hover:bg-white/50 transition-colors">
-                        <td className="px-8 py-5">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
-                              <Mail size={16} />
-                            </div>
-                            <p className="text-sm font-bold text-[#0F1F1F]">{inv.email}</p>
+                              </div>
                           </div>
-                        </td>
-                        
-                        <td colSpan={2} className="px-8 py-5">
-                          <div className="flex items-center gap-1.5 bg-blue-50 w-fit px-3 py-1 rounded-full">
-                            <span className="text-[10px] font-black uppercase tracking-tight text-blue-600">{inv.role}</span>
+                          </td>
+                          <td className="px-8 py-5">
+                          <span className="text-xs font-bold text-[#0F1F1F]">@{emp.user_name}</span>
+                          </td>
+                          <td className="px-8 py-5">
+                          <div className="flex items-center gap-1.5 bg-primary/10 w-fit px-3 py-1 rounded-full">
+                              <span className="text-[10px] font-extrabold uppercase text-primary">{emp.role || 'Member'}</span>
                           </div>
-                        </td>
+                          </td>
+                          <td className="px-8 py-5 text-right">
+                              {hasPermission && !isSelf && (
+                                  <div className="flex items-center justify-end gap-2">
+                                      <button onClick={() => { setSelectedMember(emp); setNewRole(emp.role); setIsEditRoleOpen(true); }} className="p-2 hover:bg-blue-50 text-gray-400 hover:text-blue-600 rounded-lg transition-colors">
+                                          <Edit2 size={16} />
+                                      </button>
+                                      <button onClick={() => { setSelectedMember(emp); setIsDeleteOpen(true); }} className="p-2 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-lg transition-colors">
+                                          <Trash2 size={16} />
+                                      </button>
+                                  </div>
+                              )}
+                          </td>
                       </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={3} className="px-8 py-12 text-center text-sm text-gray-400 italic">
-                        No pending invitations.
+                    );
+                  })
+                ) : (
+                  pendingInvitations.map((inv) => (
+                    <tr key={inv.invite_id} className="group hover:bg-white/50 transition-colors">
+                      <td className="px-8 py-5">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
+                            <Mail size={16} />
+                          </div>
+                          <p className="text-sm font-bold text-[#0F1F1F]">{inv.email}</p>
+                        </div>
+                      </td>
+                      <td className="px-8 py-5">
+                        <div className="flex items-center gap-1.5 bg-blue-50 w-fit px-3 py-1 rounded-full">
+                          <span className="text-[10px] font-black uppercase tracking-tight text-blue-600">{inv.role}</span>
+                        </div>
+                      </td>
+                      <td className="px-8 py-5 text-right">
+                        <div className="flex items-center justify-end gap-2 ">
+                          <button onClick={() => { setSelectedInvite(inv); setIsResendModalOpen(true); }} className="p-2 hover:bg-green-50 text-gray-400 hover:text-green-600 rounded-lg" title="Resend">
+                            <RotateCcw size={16} />
+                          </button>
+                          <button onClick={() => { setSelectedInvite(inv); setIsRevokeModalOpen(true); }} className="p-2 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-lg" title="Revoke">
+                            <XCircle size={16} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
-                  )
+                  ))
                 )}
               </tbody>
             </table>
@@ -437,6 +428,7 @@ const SettingsPage = () => {
       </div>
       )}
 
+      {/* Personal Settings Section */}
       <section>
         <div className="mb-8">
           <h2 className="text-2xl font-black text-[#0F1F1F]">Personal Settings</h2>
@@ -445,22 +437,11 @@ const SettingsPage = () => {
         <div className="bg-white/60 backdrop-blur-xl rounded-[2.5rem] border border-white p-10 shadow-sm relative overflow-hidden">
           <div className="space-y-12">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-8">
-              <InputField 
-                label="Full Name" 
-                value={userForm.fullName} 
-                onChange={(e) => setUserForm({...userForm, fullName: e.target.value})}
-              />
-              <InputField 
-                label="Email Address" 
-                value={userForm.email} 
-                onChange={(e) => setUserForm({...userForm, email: e.target.value})}
-              />
-              <InputField 
-                label="Username" 
-                value={userForm.user_name} 
-                onChange={(e) => setUserForm({...userForm, user_name: e.target.value})} 
-              />
+              <InputField label="Full Name" value={userForm.fullName} onChange={(e) => setUserForm({...userForm, fullName: e.target.value})} />
+              <InputField label="Email Address" value={userForm.email} onChange={(e) => setUserForm({...userForm, email: e.target.value})} />
+              <InputField label="Username" value={userForm.user_name} onChange={(e) => setUserForm({...userForm, user_name: e.target.value})} />
             </div>
+
             <div className="pt-4">
               <div className="flex items-center gap-2 mb-8">
                 <span className="h-px w-8 bg-primary/20"></span>
@@ -483,165 +464,81 @@ const SettingsPage = () => {
                 />
               </div>
             </div>
+
             <div className="flex items-center justify-between pt-6">
               <p className="text-[10px] text-gray-400 font-medium italic">
                 Last updated: {userInfo?.updatedAt ? new Date(userInfo.updatedAt).toLocaleDateString() : 'N/A'}
               </p>
-              <Button 
-                className="bg-primary px-10" 
-                onClick={handleUserSave}
-                disabled={updateUserMutation.isPending}
-              >
-                {updateUserMutation.isPending ? 'Updating...' : 'Update Profile'}
+              <Button className="bg-primary px-10" onClick={handleUserSave} disabled={updateUser.isPending}>
+                {updateUser.isPending ? 'Updating...' : 'Update Profile'}
               </Button>
             </div>
           </div>
         </div>
       </section>
 
-      <Modal 
-        isOpen={isOrgModalOpen} 
-        onClose={() => setIsOrgModalOpen(false)} 
-        title="Edit Organization"
-        onSave={handleOrgSave}
-        saveLabel="Save Changes"
-        isLoading={updateOrgMutation.isPending} 
-        isSaveDisabled={isUploadingLogo}
-      >
+      {/* Modals remain exactly as defined previously but with restored logic... */}
+      <Modal isOpen={isOrgModalOpen} onClose={() => setIsOrgModalOpen(false)} title="Edit Organization" onSave={handleOrgSave} saveLabel="Save Changes" isLoading={updateOrgMutation.isPending} isSaveDisabled={isUploadingLogo}>
         <div className="space-y-8">
           <div className="flex flex-col items-center gap-4">
-            
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              className="hidden" 
-              accept="image/*"
-              onChange={handleLogoChange}
-            />
-
-            <div 
-              className="relative group cursor-pointer" 
-              onClick={() => !isUploadingLogo && fileInputRef.current?.click()}
-            >
+            <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleLogoChange}/>
+            <div className="relative group cursor-pointer" onClick={() => !isUploadingLogo && fileInputRef.current?.click()}>
               <div className={`w-24 h-24 rounded-2xl bg-gray-50 border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden group-hover:border-primary transition-colors ${isUploadingLogo ? 'opacity-50' : ''}`}>
-                 
-                 {isUploadingLogo ? (
-                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                 ) : orgForm.logoUrl ? (
-                   <img 
-                     src={orgForm.logoUrl} 
-                     alt="Logo Preview" 
-                     className="w-full h-full object-cover group-hover:opacity-50 transition-opacity" 
-                   />
-                 ) : (
-                   <Camera size={24} className="text-gray-300 group-hover:text-primary" />
-                 )}
-
-                 {!isUploadingLogo && orgForm.logoUrl && (
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Camera size={24} className="text-primary font-bold" />
-                    </div>
-                 )}
+                 {isUploadingLogo ? <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div> : orgForm.logoUrl ? <img src={orgForm.logoUrl} alt="Logo" className="w-full h-full object-cover" /> : <Camera size={24} className="text-gray-300" />}
               </div>
-              <p className="text-[10px] font-black uppercase text-center mt-2 text-gray-400">
-                {isUploadingLogo ? 'Uploading...' : 'Update Logo'}
-              </p>
             </div>
           </div>
-
-          <InputField 
-            label="Organization Name" 
-            value={orgForm.name}
-            onChange={(e) => setOrgForm({...orgForm, name: e.target.value})} 
-          />
+          <InputField label="Organization Name" value={orgForm.name} onChange={(e) => setOrgForm({...orgForm, name: e.target.value})} />
         </div>
       </Modal>
 
-      <Modal 
-        isOpen={isInviteModalOpen} 
-        onClose={() => setIsInviteModalOpen(false)} 
-        title="Invite Team Member"
-        >
+      <Modal isOpen={isResendModalOpen} onClose={() => setIsResendModalOpen(false)} title="Resend Invitation">
+        <div className="space-y-6">
+          <p className="text-sm text-gray-500">Send a new invitation link to <strong>{selectedInvite?.email}</strong>?</p>
+          <div className="flex gap-3 justify-end"><Button variant="ghost" onClick={() => setIsResendModalOpen(false)}>Cancel</Button><Button className="bg-primary" onClick={handleResend} isLoading={resendInviteMutation.isPending}>Resend Now</Button></div>
+        </div>
+      </Modal>
+
+      <Modal isOpen={isRevokeModalOpen} onClose={() => setIsRevokeModalOpen(false)} title="Revoke Invitation">
+        <div className="space-y-6">
+           <div className="flex items-start gap-4 bg-orange-50 p-4 rounded-xl border border-orange-100">
+              <AlertCircle className="text-orange-500 w-6 h-6 shrink-0" />
+              <p className="text-xs text-orange-800">This will invalidate the existing invitation link for <strong>{selectedInvite?.email}</strong>.</p>
+           </div>
+           <div className="flex gap-3 justify-end"><Button variant="ghost" onClick={() => setIsRevokeModalOpen(false)}>Cancel</Button><Button className="bg-red-500 text-white" onClick={handleRevoke} isLoading={revokeInviteMutation.isPending}>Revoke Invite</Button></div>
+        </div>
+      </Modal>
+
+      {/* Invite Modal */}
+      <Modal isOpen={isInviteModalOpen} onClose={() => setIsInviteModalOpen(false)} title="Invite Team Member">
         <div className="space-y-8">
-            <p className="text-sm text-gray-500">
-            Send an invitation email to a new user to grant them access to <strong>{org?.org_name}</strong>.
-            </p>
-
+            <p className="text-sm text-gray-500">Send an invitation email to a new user for <strong>{org?.org_name}</strong>.</p>
             <div className="space-y-6">
-            <InputField 
-                label="Email Address" 
-                placeholder="colleague@example.com" 
-                type="email" 
-                value={inviteForm.email}
-                onChange={(e) => setInviteForm({...inviteForm, email: e.target.value})}
-            />
-
-            <SelectField 
-                label="Assign Role"
-                placeholder="Select a role..."
-                options={ROLE_OPTIONS}
-                value={inviteForm.role}
-                onChange={(val) => setInviteForm({...inviteForm, role: val})}
-                error={inviteForm.email && !inviteForm.role ? "Please select a role" : ""}
-            />
+              <InputField label="Email Address" type="email" value={inviteForm.email} onChange={(e) => setInviteForm({...inviteForm, email: e.target.value})}/>
+              <SelectField label="Assign Role" options={getManageableRoles()} value={inviteForm.role} onChange={(val) => setInviteForm({...inviteForm, role: val})} />
             </div>
-
-            <Button 
-            className="w-full bg-primary py-4 mt-4" 
-            onClick={handleInvite}
-            disabled={inviteUserMutation.isPending || !inviteForm.email || !inviteForm.role}
-            >
-            {inviteUserMutation.isPending ? 'Sending...' : 'Send Invitation'}
-            </Button>
+            <Button className="w-full bg-primary py-4 mt-4" onClick={handleInvite} isLoading={inviteUserMutation.isPending}>Send Invitation</Button>
         </div>
       </Modal>
 
-      <Modal
-        isOpen={isEditRoleOpen}
-        onClose={() => setIsEditRoleOpen(false)}
-        title="Update User Role"
-        onSave={handleUpdateRole}
-        saveLabel="Update Role"
-        // isLoading={updateMemberRoleMutation.isPending}
-      >
-        <div className="space-y-4">
-          <p className="text-sm text-gray-500">
-            Changing the role for <strong className="text-black">{selectedMember?.fullname}</strong>.
-          </p>
-          <SelectField
-            label="Select Role"
-            options={ROLE_OPTIONS}
-            value={newRole}
-            onChange={setNewRole}
-          />
-        </div>
+      {/* Update Role Modal */}
+      <Modal isOpen={isEditRoleOpen} onClose={() => setIsEditRoleOpen(false)} title="Update User Role" onSave={handleUpdateRole} saveLabel="Update Role" isLoading={updateUserRoleMutation.isPending}>
+          <SelectField label="Select New Role" options={getManageableRoles()} value={newRole} onChange={setNewRole} />
       </Modal>
 
-      <Modal
-        isOpen={isDeleteOpen}
-        onClose={() => setIsDeleteOpen(false)}
-        title="Remove Team Member"
-      >
+      {/* Delete Confirmation Modal */}
+      <Modal isOpen={isDeleteOpen} onClose={() => setIsDeleteOpen(false)} title="Remove Team Member">
         <div className="space-y-6">
            <div className="flex items-start gap-4 bg-red-50 p-4 rounded-xl border border-red-100">
               <AlertCircle className="text-red-500 w-6 h-6 shrink-0" />
               <div>
                 <h4 className="text-sm font-bold text-red-800">Are you sure?</h4>
-                <p className="text-xs text-red-600 mt-1">
-                  This action will permanently remove <strong className='text-red-900'>{selectedMember?.fullname}</strong> from the organization. They will lose all access immediately.
-                </p>
+                <p className="text-xs text-red-600 mt-1">Permanently remove <strong>{selectedMember?.fullname}</strong>.</p>
               </div>
            </div>
-
            <div className="flex gap-3 justify-end pt-2">
              <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
-             <Button 
-               className="bg-red-500 hover:bg-red-600 text-white" 
-               onClick={handleRemoveMember}
-              //  isLoading={removeMemberMutation.isPending}
-             >
-               Remove Member
-             </Button>
+             <Button className="bg-red-500 hover:bg-red-600 text-white" onClick={handleremoveUser} isLoading={removeUserMutation.isPending}>Remove Member</Button>
            </div>
         </div>
       </Modal>

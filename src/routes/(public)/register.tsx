@@ -1,18 +1,18 @@
 import LoadingScreen from '@/components/global/Loading';
 import { notify } from '@/components/global/Toast';
-import { checkInviteTokenApi } from '@/features/auth/api/authApi';
 import { RegisterPage } from '@/pages/auth/RegisterPage';
+import { checkInviteTokenApi } from '@/shared/invitations/api/inviteApi';
 import { createFileRoute, redirect } from '@tanstack/react-router';
 import { z } from 'zod';
 
 const registerSearchSchema = z.object({
-  'invite-token': z.string().optional(),
+  'invite_token': z.string().optional(),
 });
 
 export const Route = createFileRoute('/(public)/register')({
   validateSearch: (search) => registerSearchSchema.parse(search),
 
-  loaderDeps: ({ search: { 'invite-token': inviteToken } }) => ({
+  loaderDeps: ({ search: { 'invite_token': inviteToken } }) => ({
     inviteToken,
   }),
 

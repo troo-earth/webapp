@@ -22,7 +22,7 @@ import {
   fallBackUrl,
   getCountryName,
   getSDGColor,
-} from "@/entities/listings/utils/helpers";
+} from "@/shared/listings/utils/helpers";
 import useScrollToTopOnNav from "@/hooks/useScrollToTopOnNav";
 import { portfolioQueries } from "@/features/portfolio/query/portfolioQuery";
 

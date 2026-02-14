@@ -132,7 +132,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
                 </p>
                 <button
                   type="button"
-                  onClick={onDismissInvite} // This function clears the query params
+                  onClick={onDismissInvite} 
                   className="text-[9px] text-red-400 font-extrabold uppercase tracking-tighter hover:text-red-500 transition-colors cursor-pointer"
                 >
                   Dismiss

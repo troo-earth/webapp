@@ -1,17 +1,19 @@
 import { useState, useEffect } from 'react';
-import { Navigate, useLocation, useNavigate } from '@tanstack/react-router';
+import { useLocation, useNavigate } from '@tanstack/react-router';
 import { createPortal } from 'react-dom';
 import { MailOpen } from 'lucide-react';
-import { Button } from '../buttons/Button';
+import { Button } from '../../../components/ui/buttons/Button';
 import type { InviteData } from '@/types/global/types';
+import { useInviteFlow } from '../hooks/useInviteFlow';
 
 const InviteModal = ({ data }: { data: InviteData }) => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
-  const navigate = useNavigate();
+  
+  const { clearInvite } = useInviteFlow();
 
   const searchParams = new URLSearchParams(location.search);
-  const inviteToken = searchParams.get('invite-token');
+  const inviteToken = searchParams.get('invite_token');
 
   const isLogin = location.pathname.includes('/login');
   const isAuthPage = isLogin || location.pathname.includes('/register');
@@ -23,19 +25,10 @@ const InviteModal = ({ data }: { data: InviteData }) => {
 
   if (!isOpen || !shouldTrigger) return null;
 
-  const handleDismiss = () => {
-    setIsOpen(false);
-    // Clear the search params (the invite-token)
-    navigate({ 
-      search:{},
-      replace: true 
-    });
-  };  
-
   const { org_name, role, email } = data.data;
 
   return createPortal(
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+    <div className="fixed inset-0 z-100 flex items-center justify-center p-6">
       {/* Darkened Overlay */}
       <div 
         className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity animate-in fade-in duration-500" 
@@ -43,7 +36,7 @@ const InviteModal = ({ data }: { data: InviteData }) => {
       />
       
       {/* Modal Container with Visible Outline */}
-      <div className="relative w-full max-w-sm bg-white rounded-[2rem] p-8 shadow-2xl border border-gray-100 animate-in fade-in zoom-in-95 duration-300">
+      <div className="relative w-full max-w-sm bg-white rounded-4xl p-8 shadow-2xl border border-gray-100 animate-in fade-in zoom-in-95 duration-300">
         
         <div className="text-center">
           <div className="inline-flex items-center justify-center w-12 h-12 mb-6 rounded-2xl bg-primary/5">
@@ -78,7 +71,7 @@ const InviteModal = ({ data }: { data: InviteData }) => {
           </Button>
           
           <button 
-            onClick={handleDismiss}
+            onClick={clearInvite}
             className="text-[11px] font-bold text-gray-400 uppercase tracking-widest hover:text-gray-600 transition-colors"
           >
             Dismiss

@@ -1,5 +1,5 @@
   import { api } from "@/lib/axiosConfig";
-  import type { AuthResponse, LoginFormData, OnboardingPayload, OrgResponse, RegisterFormData } from "../types/authTypes";
+  import type { AuthResponse, LoginFormData, OnboardingPayload, OrgResponse, RegisterFormData, UpdateUserPayload } from "../types/authTypes";
   import { handleError } from "@/utils/utils";
   import type { User } from "@/types/global/types";
   import { extractLoginAuthObject, extractRegisterAuthObject } from "../utils/extractAuthObject";
@@ -16,18 +16,12 @@
 
   export const registerApi = async (data: RegisterFormData): Promise<User> => {
     try {
-      const trimmedFirstName = data.firstName.trim();
-      const trimmedLastName = data.lastName?.trim() || '';
-      
-      const fullname = trimmedLastName 
-        ? `${trimmedFirstName} ${trimmedLastName}` 
-        : trimmedFirstName;
             
       const apiPayload = {
         user_name: data.username,
         email: data.email,
         password: data.password,
-        fullname,
+        fullname: data.fullName,
       };
       
       const response = await api.post<AuthResponse>('/users/create-user', apiPayload);
@@ -103,13 +97,3 @@
       throw new Error(handleError(error, "Onboarding process failed."));
     }
   };
-
-  export const checkInviteTokenApi = async (token: string ) => {
-    const payload = { token: token };
-    try {
-      const response = await api.post('/invitations/public/check-token', payload);
-      return response.data;
-    } catch (error: unknown) {
-      throw new Error(handleError(error, "Invalid or expired invitation token."));
-    }
-  }

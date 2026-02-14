@@ -1,19 +1,19 @@
 import LoadingScreen from '@/components/global/Loading'
 import { notify } from '@/components/global/Toast'
-import { checkInviteTokenApi } from '@/features/auth/api/authApi'
 import { LoginPage } from '@/pages/auth/LoginPage'
+import { checkInviteTokenApi } from '@/shared/invitations/api/inviteApi'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { z } from 'zod'
 
 const loginSearchSchema = z.object({
   redirect: z.string().optional().catch(''),
-  'invite-token': z.string().optional(),
+  'invite_token': z.string().optional(),
 })
 
 export const Route = createFileRoute('/(public)/login')({
   validateSearch: (search) => loginSearchSchema.parse(search),
   
-  loaderDeps: ({ search: { 'invite-token': inviteToken } }) => ({
+  loaderDeps: ({ search: { 'invite_token': inviteToken } }) => ({
     inviteToken,
   }),
 

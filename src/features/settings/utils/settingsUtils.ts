@@ -1,5 +1,5 @@
-const ROLE_HIERARCHY = {
-  super_admin: 4,
+export const ROLE_HIERARCHY = {
+  superadmin: 4,
   admin: 3,
   manager: 2,
   viewer: 1

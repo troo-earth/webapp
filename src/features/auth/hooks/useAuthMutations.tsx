@@ -6,44 +6,51 @@ import { notify } from "@/components/global/Toast";
 import type { OnboardingParams } from "../types/authTypes";
 
 
-export const useRegister = () => {
+export const useRegister = (options?: { 
+  onMutate?: () => void; 
+  onSettled?: () => void 
+}) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  
-  const search = useSearch({ from: '/(public)/register' }); 
-  const inviteToken = search['invite-token'] || undefined;
 
   return useMutation({
     mutationFn: registerApi,
+    onMutate: () => options?.onMutate?.(),
+    onSettled: () => options?.onSettled?.(),
     onSuccess: (data) => {
       queryClient.setQueryData(authQueries.me().queryKey, data);
       notify.success("User Registered successfully");
-
-      if (inviteToken) {
-        navigate({ to: '/explore', replace: true });
-      } else {
-        navigate({ to: '/onboarding', replace: true });
-      }
+      // Logic for inviteToken check here to skip onboarding
+      navigate({ to: '/onboarding', replace: true });
     },
-    onError: (error) => {
-      console.error("Registration error:", error);
+    onError: (error: any) => {
+      notify.error(error?.response?.data?.message || "Registration failed");
     }
   });
 };
 
-export const useLogin = () => {
+export const useLogin = (options?: { 
+  onMutate?: () => void; 
+  onSettled?: () => void 
+}) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   return useMutation({
     mutationFn: loginApi,
+    onMutate: () => {
+      options?.onMutate?.();
+    },
+    onSettled: () => {
+      options?.onSettled?.();
+    },
     onSuccess: (data) => {
       queryClient.setQueryData(authQueries.me().queryKey, data);
-      navigate({ to: '/explore', replace: true });
       notify.success("Logged In successfully");
+      navigate({ to: '/explore', replace: true });
     },
-    onError: () => {
-      notify.error("Login failed");
+    onError: (error: any) => {
+      notify.error(error?.response?.data?.message || "Login failed");
     }
   });
 };

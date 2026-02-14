@@ -1,4 +1,4 @@
-import type { ListingResponse } from "@/entities/listings/types/listingTypes";
+import type { ListingResponse } from "@/shared/listings/types/listingTypes";
 
 export type FactCardType = {
     id: string;

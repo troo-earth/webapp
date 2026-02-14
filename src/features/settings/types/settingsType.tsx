@@ -80,3 +80,8 @@ export interface InvitationsResponse {
   data: Invitees[];
   metadata: Record<string, unknown>;
 }
+
+export interface UpdateUserPayload {
+  user_id: string;
+  role: InvitationRole
+}

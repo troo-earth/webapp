@@ -5,14 +5,18 @@ import AuthHeader from '@/features/auth/components/shared/AuthHeader';
 import { RegisterDecorative } from '@/features/auth/components/register/RegisterDecorative';
 import { RegisterModal } from '@/features/auth/components/register/RegisterModal';
 import AuthFooter from '@/features/auth/components/shared/AuthFooter';
-import InviteModal from '@/components/ui/modal/InviteModal';
+import InviteModal from '@/shared/invitations/components/InviteModal';
 import { Route } from '@/routes/(public)/register';
 import LoadingScreen from '@/components/global/Loading';
+import { useInviteFlow } from '@/shared/invitations/hooks/useInviteFlow';
+
 
 export const RegisterPage: React.FC = () => {
 
   const inviteData = Route.useLoaderData();
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  const { clearInvite } = useInviteFlow();
   
   const invitedEmail = inviteData?.data?.valid ? inviteData.data.email : undefined;
 
@@ -31,7 +35,7 @@ export const RegisterPage: React.FC = () => {
         <RegisterDecorative />
 
         <div className="col-span-1 lg:col-span-7 flex justify-center lg:justify-end h-full items-center">
-          <RegisterModal onPendingChange={setIsLoggingIn} prefilledEmail={invitedEmail}/>
+          <RegisterModal onPendingChange={setIsLoggingIn} prefilledEmail={invitedEmail} onDismissInvite={clearInvite}/>
         </div>
       </div>
 

@@ -1,5 +1,5 @@
 import { Globe, Leaf, ShieldCheck } from "lucide-react";
-import { ListingCard } from "../../entities/listings/components/ListingCard";
+import { ListingCard } from "../../shared/listings/components/ListingCard";
 import { useMemo, useState } from "react";
 import { FilterButton } from "@/components/ui/buttons/FilterButton";
 import { SearchInput } from "@/components/ui/input/SearchInputfield";
@@ -7,12 +7,12 @@ import { useQuery } from "@tanstack/react-query";
 import LoadingScreen from "@/components/global/Loading";
 import { FACT_CARDS } from "../../features/explore/constants/data";
 import { Link } from "@tanstack/react-router";
-import { transformListing } from "@/entities/listings/utils/helpers";
-import type { Listing } from "@/entities/listings/types/listingTypes";
+import { transformListing } from "@/shared/listings/utils/helpers";
+import type { Listing } from "@/shared/listings/types/listingTypes";
 import type { DisplayItem, FactCardType } from "@/features/explore/types/exploreTypes";
 import { StatItem } from "@/features/explore/components/StatItem";
 import { FactCard } from "@/features/explore/components/FactCard";
-import { listingQueries } from "@/entities/listings/queries/listingQueries";
+import { listingQueries } from "@/shared/listings/queries/listingQueries";
 
 
 export const ExplorePage = () => {

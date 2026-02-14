@@ -5,7 +5,7 @@ import type {
   ListingEventDTO,
   RetirementDTO,
 } from "../types/historyTypes";
-import { getAllListingsApi } from "@/entities/listings/api/listingApi";
+import { getAllListingsApi } from "@/shared/listings/api/listingApi";
 import {
   transformListingEvent,
   transformRetirement,

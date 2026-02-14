@@ -1,6 +1,6 @@
 import { api } from "@/lib/axiosConfig";
 import { handleError } from "@/utils/utils";
-import type { InvitationsResponse, Invitees, InviteUser, OrganizationApiResponse, OrganizationData, UpdateOrg, UpdateUser, UserApiResponse, UserData } from "../types/settingsType";
+import type { OrganizationApiResponse, OrganizationData, UpdateOrg, UpdateUser, UpdateUserPayload, UserApiResponse, UserData } from "../types/settingsType";
 
 export const getInfoByOrgIdApi = async (): Promise<OrganizationData> =>{
   try{
@@ -44,24 +44,22 @@ export const updateUserProfileApi = async (payload: UpdateUser): Promise<UserDat
   }
 };
 
-export const inviteUserApi = async (payload: InviteUser): Promise<void> => {
-  try {
-    await api.post<InviteUser>(
-      '/invitations/create-invite', 
-      payload
-    );
-  } catch (error: unknown) {
-    throw new Error(handleError(error, "Failed to send invitation."));
-  }
-};
 
-export const viewOrgInvitees = async (): Promise<Invitees[]> => {
-  try{
-    const response = await api.get<InvitationsResponse>(
-      '/invitations/view-invites',
-    );
-    return response.data.data;
-  } catch (error: unknown) {
-    throw new Error(handleError(error, "Failed to get organization invitees"))
-  }
-}
+  export const updateUserRoleApi = async (payload: UpdateUserPayload): Promise<void> => {
+    try {
+      const response = await api.patch('/users/update-role', payload);
+      return response.data;
+    } catch (error: unknown) {
+      throw new Error(handleError(error, "User role update failed."));
+    }
+  };
+
+  export const removeUserFromOrgApi = async (userId: string): Promise<void> => {
+    const payload = { user_id: userId };
+    try {
+      const response = await api.delete('/users/remove-user', { data: payload });
+      return response.data;
+    } catch (error: unknown) {
+      throw new Error(handleError(error, "Failed to remove user from organization."));
+    }
+  };

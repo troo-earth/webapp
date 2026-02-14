@@ -14,7 +14,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
 import { Logo } from "./Logo";
 import { useAuth } from "@/features/auth/hooks/useAuth";
-import { listingQueries } from "@/entities/listings/queries/listingQueries";
+import { listingQueries } from "@/shared/listings/queries/listingQueries";
 
 const Sidebar: React.FC = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
