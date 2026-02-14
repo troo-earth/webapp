@@ -1,8 +1,7 @@
-import { Logo, LogoHead } from '@/components/global/Logo';
+import { LogoHead } from '@/components/global/Logo';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import type { QueryClient } from '@tanstack/react-query';
 import { createRootRouteWithContext, Outlet } from '@tanstack/react-router';
-import { LayoutDashboard } from 'lucide-react';
 
 interface MyRouterContext {
   queryClient: QueryClient;
@@ -20,7 +19,7 @@ function RootComponent() {
       <div className="h-screen w-full bg-white flex flex-col items-center justify-center p-8 text-center">
         <div className="relative mb-10">
           <div className="relative w-20 h-20  border border-white/10 rounded-2xl flex items-center justify-center ">
-            <LogoHead size={80} />
+            <LogoHead size="large" />
           </div>
         </div>
         <h1 className="text-3xl font-black text-primary tracking-tight mb-3">

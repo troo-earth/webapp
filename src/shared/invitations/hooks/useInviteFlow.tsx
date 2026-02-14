@@ -5,7 +5,8 @@ export const useInviteFlow = () => {
 
   const clearInvite = () => {
     navigate({
-      search: (prev: any) => {
+      to: '.', 
+      search: (prev: Record<string, any>) => {
         const { 'invite_token': _, ...rest } = prev;
         return rest;
       },

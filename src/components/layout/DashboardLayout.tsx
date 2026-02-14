@@ -1,4 +1,4 @@
-import { Outlet, Link, useRouteContext } from '@tanstack/react-router'
+import { Outlet, Link } from '@tanstack/react-router'
 import { motion, AnimatePresence } from 'framer-motion'
 import BgGradient from '../ui/global/BgGradient'
 import { Header } from '../global/Header'

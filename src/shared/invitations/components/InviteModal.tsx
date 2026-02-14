@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from '@tanstack/react-router';
+import { useLocation } from '@tanstack/react-router';
 import { createPortal } from 'react-dom';
 import { MailOpen } from 'lucide-react';
 import { Button } from '../../../components/ui/buttons/Button';

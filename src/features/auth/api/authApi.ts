@@ -1,5 +1,5 @@
   import { api } from "@/lib/axiosConfig";
-  import type { AuthResponse, LoginFormData, OnboardingPayload, OrgResponse, RegisterFormData, UpdateUserPayload } from "../types/authTypes";
+  import type { AuthResponse, LoginFormData, OnboardingPayload, OrgResponse, RegisterFormData } from "../types/authTypes";
   import { handleError } from "@/utils/utils";
   import type { User } from "@/types/global/types";
   import { extractLoginAuthObject, extractRegisterAuthObject } from "../utils/extractAuthObject";
