@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { checkInviteTokenApi, inviteUserApi, resendInviteApi, revokeInviteApi } from "../api/inviteApi";
+import { acceptInviteApi, checkInviteTokenApi, inviteUserApi, resendInviteApi, revokeInviteApi } from "../api/inviteApi";
 
 
 export const useInviteUser = () => {
@@ -15,6 +15,12 @@ export const useInviteUser = () => {
 export const useResendInvite = () => {
   return useMutation({
     mutationFn: resendInviteApi,
+  });
+};
+
+export const useAcceptInvite = () => {
+  return useMutation({
+    mutationFn: acceptInviteApi,
   });
 };
 
