@@ -25,11 +25,11 @@ import {
   fallBackUrl,
   getCountryName,
   getSDGColor,
-} from "@/entities/listings/utils/helpers";
+} from "@/shared/listings/utils/helpers";
 import useScrollToTopOnNav from "@/hooks/useScrollToTopOnNav";
 import { useState } from "react";
-import { PurchaseModal } from "@/entities/listings/components/ListingPurchaseModal";
-import { listingQueries } from "@/entities/listings/queries/listingQueries";
+import { PurchaseModal } from "@/shared/listings/components/ListingPurchaseModal";
+import { listingQueries } from "@/shared/listings/queries/listingQueries";
 
 export const ListingPage = () => {
   const { source, listingId } = useParams({

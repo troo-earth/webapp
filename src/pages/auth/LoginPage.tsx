@@ -4,8 +4,26 @@ import AuthHeader from '../../features/auth/components/shared/AuthHeader';
 import BgGradient from '@/components/ui/global/BgGradient';
 import { LoginDecorative } from '../../features/auth/components/login/LoginDecorative';
 import type React from "react";
+import { useState } from "react";
+import LoadingScreen from "@/components/global/Loading";
+import InviteModal from "@/shared/invitations/components/InviteModal";
+import { Route } from "@/routes/(public)/login";
+import { useInviteFlow } from "@/shared/invitations/hooks/useInviteFlow";
 
 export const LoginPage: React.FC = () => {
+
+  const inviteData = Route.useLoaderData();
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  const { clearInvite } = useInviteFlow();
+
+  const invitedEmail = inviteData?.data?.valid ? inviteData.data.email : undefined;
+
+  if(isLoggingIn) {
+    return <LoadingScreen/>
+  }
+
+
   return (
     <div className="relative h-screen w-full flex flex-col items-center justify-center overflow-hidden bg-[#FDFDFD] font-nunito">
       
@@ -17,11 +35,12 @@ export const LoginPage: React.FC = () => {
         <LoginDecorative/>
 
         <div className="col-span-1 lg:col-span-7 flex justify-center lg:justify-end h-full items-center">
-          <LoginModal />
+          <LoginModal onPendingChange={setIsLoggingIn} prefilledEmail={invitedEmail} onDismissInvite={clearInvite}/>
         </div>
       </div>
 
       <AuthFooter/>
+      <InviteModal data={inviteData} />
 
       <style>{`
         .animate-bounce-slow {

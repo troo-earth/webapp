@@ -32,7 +32,7 @@ export const ActiveListingPage = () => {
   if (error) {
     return (
       <div className="min-h-screen font-nunito pb-20 bg-gray-50/30 px-4 pt-10">
-        <div className="mx-auto max-w-[1600px] p-8 bg-red-50 border border-red-200 rounded-3xl text-red-600 font-medium">
+        <div className="mx-auto max-w-400 p-8 bg-red-50 border border-red-200 rounded-3xl text-red-600 font-medium">
           {error instanceof Error ? error.message : "Failed to load listings"}
         </div>
       </div>
@@ -41,7 +41,7 @@ export const ActiveListingPage = () => {
 
   return (
     <div className="min-h-screen font-nunito pb-20 bg-[#F8FAFA]">
-      <div className="mx-auto px-4 py-6 max-w-[1600px]">
+      <div className="mx-auto px-4 py-6 max-w-400">
         
         {/* Navigation & Breadcrumb */}
         <div className="mb-6">
@@ -64,7 +64,7 @@ export const ActiveListingPage = () => {
             </div>
 
             {/* Primary Search Bar - Right side */}
-            <div className="flex gap-4 flex-shrink-0 w-full max-w-md justify-end">
+            <div className="flex gap-4 shrink-0 w-full max-w-md justify-end">
               <SearchInput 
                 placeholder="Filter your active listings by project, batch serial, or region..." 
                 value={searchQuery}

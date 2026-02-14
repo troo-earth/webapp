@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/buttons/Button";
-import { buyCreditsApi } from "@/entities/listings/api/listingApi";
+import { buyCreditsApi } from "@/shared/listings/api/listingApi";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/redux/store";
 import { createPortal } from "react-dom";

@@ -4,18 +4,28 @@ import SuccessOverlay from '@/features/auth/components/onboard/SuccessOverlay';
 import AuthHeader from '@/features/auth/components/shared/AuthHeader';
 import { OnboardingModal } from '@/features/auth/components/onboard/OnboardingModal';
 import AuthFooter from '@/features/auth/components/shared/AuthFooter';
+import { authQueries } from '@/features/auth/query/authQuery';
+import { useNavigate } from '@tanstack/react-router';
+import { useQueryClient } from '@tanstack/react-query';
 
 export const OnboardingPage: React.FC = () => {
+    const navigate = useNavigate();
+    const queryClient = useQueryClient();
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
 
   const handleSuccess = (): void => {
     setIsSuccess(true);
   };
 
+  const handleComplete = async () => {
+    await queryClient.invalidateQueries({ queryKey: authQueries.me().queryKey });
+    navigate({ to: '/explore', replace: true });
+  };
+
   return (
     <div className="relative h-screen w-full flex flex-col overflow-hidden bg-[#FDFDFD] font-nunito">
       
-      {isSuccess && <SuccessOverlay />}
+      {isSuccess && <SuccessOverlay onComplete={handleComplete} />}
       <BgGradient/>
 
       <AuthHeader/>

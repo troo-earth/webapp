@@ -9,6 +9,7 @@ export interface User {
   fullname: string;
   email: string;
   org_id: string | null;
+  role: string;
 }
 
 export interface SelectOption {
@@ -36,4 +37,15 @@ export interface ModalProps {
   onSave?: () => void;       
   saveLabel?: string;        
   isLoading?: boolean;      
+}
+
+export interface InviteData {
+  data: {
+    email: string;
+    role: string;
+    org_id: string;
+    org_name: string;
+    org_code: string;
+    valid: boolean;
+  };
 }

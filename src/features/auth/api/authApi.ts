@@ -1,5 +1,5 @@
   import { api } from "@/lib/axiosConfig";
-  import type { AuthResponse, LoginFormData, OnboardingPayload, OrgResponse, RegisterFormData } from "../types/authTypes";
+  import type { AuthResponse, LoginFormData, OnboardingPayload, OrgResponse, RegisterFormData, UpdateUserPayload } from "../types/authTypes";
   import { handleError } from "@/utils/utils";
   import type { User } from "@/types/global/types";
   import { extractLoginAuthObject, extractRegisterAuthObject } from "../utils/extractAuthObject";
@@ -16,20 +16,12 @@
 
   export const registerApi = async (data: RegisterFormData): Promise<User> => {
     try {
-      const trimmedFirstName = data.firstName.trim();
-      const trimmedLastName = data.lastName?.trim() || '';
-      
-      const fullname = trimmedLastName 
-        ? `${trimmedFirstName} ${trimmedLastName}` 
-        : trimmedFirstName;
-      
-      const user_name = `${trimmedFirstName}${trimmedLastName}`.toLowerCase().replace(/\s+/g, '');
-      
+            
       const apiPayload = {
-        user_name,
+        user_name: data.username,
         email: data.email,
         password: data.password,
-        fullname,
+        fullname: data.fullName,
       };
       
       const response = await api.post<AuthResponse>('/users/create-user', apiPayload);

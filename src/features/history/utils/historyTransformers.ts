@@ -5,7 +5,7 @@ import type {
   RetirementHistory,
   TransferHistory,
 } from "../types/historyTypes";
-import type { ListingResponse } from "@/entities/listings/types/listingTypes";
+import type { ListingResponse } from "@/shared/listings/types/listingTypes";
 
 /**
  * Transform listing event to SellHistory with event description

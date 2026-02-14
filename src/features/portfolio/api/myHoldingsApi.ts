@@ -1,7 +1,7 @@
 import { api } from "@/lib/axiosConfig";
 import { handleError } from "@/utils/utils";
 import type { Portfolio, HoldingDTO } from "@/features/portfolio/types/portfolioTypes";
-import { getAllListingsApi } from "@/entities/listings/api/listingApi";
+import { getAllListingsApi } from "@/shared/listings/api/listingApi";
 import type { HoldingProject, HoldingProjectResponse } from "@/features/portfolio/types/portfolioTypes";
 
 export const getMyHoldingsApi = async (): Promise<Portfolio[]> => {

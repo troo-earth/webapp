@@ -13,10 +13,10 @@ export const useAuth = () => {
   const logoutMutation = useMutation({
     mutationFn: logoutApi,
     onSuccess: async () => {
+      queryClient.clear();
+      sessionStorage.clear();
       navigate({ to: '/login', replace: true });
       notify.success("Logged out successfully");
-      queryClient.setQueryData(authQueries.me().queryKey, null);
-      queryClient.invalidateQueries({ queryKey: authQueries.me().queryKey }); 
     },
   });
 

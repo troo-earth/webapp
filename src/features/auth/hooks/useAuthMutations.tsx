@@ -1,49 +1,108 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router"; 
+import { useNavigate, useSearch } from "@tanstack/react-router"; 
 import { loginApi, onboardingApi, registerApi, uploadLogoApi, uploadProofApi } from "../api/authApi";
 import { authQueries } from "../query/authQuery";
 import { notify } from "@/components/global/Toast";
 import type { OnboardingParams } from "../types/authTypes";
+import { acceptInviteApi } from "@/shared/invitations/api/inviteApi";
 
 
-export const useRegister = () => {
+export const useRegister = (options?: { 
+  onMutate?: () => void; 
+  onSettled?: () => void 
+}) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  
+
+  const search = useSearch({ strict: false }); 
+  const inviteToken = String(search?.invite_token || '');
 
   return useMutation({
     mutationFn: registerApi,
-    onSuccess: (data) => {
+    onMutate: () => options?.onMutate?.(),
+    onSettled: () => options?.onSettled?.(),
+    onSuccess: async (data) => {
       queryClient.setQueryData(authQueries.me().queryKey, data);
-      navigate({ to: '/onboarding', replace: true });
       notify.success("User Registered successfully");
 
+      if (inviteToken) {
+        try {
+          const response = await acceptInviteApi({token: inviteToken});
+          const org = response?.data
+          await queryClient.invalidateQueries({ queryKey: authQueries.me().queryKey });
+          notify.success(`Joined ${org?.org_name} as a ${org?.role} successfully!`);
+          navigate({ 
+            to: '/explore', 
+            search: { invite: 'success' },
+            replace: true 
+          });
+          return; 
+        } catch (error: any) {
+          notify.error(error?.response?.data?.message || "Failed to join organization");
+          navigate({ to: '/onboarding', replace: true });
+          return;
+        }
+      }
+
+      navigate({ to: '/onboarding', replace: true });
     },
-    onError: () => {
-      notify.error("Registration failed");
+    onError: (error: any) => {
+      notify.error(error?.response?.data?.message || "Registration failed");
     }
   });
 };
 
-export const useLogin = () => {
+export const useLogin = (options?: { 
+  onMutate?: () => void; 
+  onSettled?: () => void 
+}) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  
+  const search = useSearch({ strict: false });
+  const inviteToken = search?.invite_token;
 
   return useMutation({
     mutationFn: loginApi,
-    onSuccess: (data) => {
-      queryClient.setQueryData(authQueries.me().queryKey, data);
-      navigate({ to: '/explore', replace: true });
-      notify.success("Logged In successfully");
+    onMutate: () => {
+      options?.onMutate?.();
     },
-    onError: () => {
-      notify.error("Login failed");
+    onSettled: () => {
+      options?.onSettled?.();
+    },
+    onSuccess: async (data) => {
+      queryClient.setQueryData(authQueries.me().queryKey, data);
+      notify.success("Logged In successfully");
+
+      if (inviteToken) {
+        try {
+          const response = await acceptInviteApi({token: inviteToken});
+          const org = response?.data
+         
+          notify.success(`Joined ${org?.org_name} as a ${org?.role} successfully!`);
+          await queryClient.invalidateQueries({ queryKey: authQueries.me().queryKey });
+          navigate({ 
+            to: '/explore', 
+            replace: true 
+          });
+          return; 
+        } catch (error: any) {
+          const errMsg = error?.response?.data?.message || "Failed to join organization";
+          notify.error(errMsg);
+        }
+      }
+
+      navigate({ to: '/explore', replace: true });
+    },
+    onError: (error: any) => {
+      notify.error(error?.response?.data?.message || "Login failed");
     }
   });
 };
 
 
 export const useOnboarding = () => {
-
   return useMutation({
     mutationFn: async ({ formData, logoFile, proofFile }: OnboardingParams) => {
       if (!logoFile || !proofFile) throw new Error("Files are missing");

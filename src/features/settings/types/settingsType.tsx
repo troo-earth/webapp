@@ -41,14 +41,14 @@ export interface UserApiResponse {
   data: UserData;
 }
 
-export interface UpdateOrgDTO {
+export interface UpdateOrg {
   org_id: string;
   org_name: string;
   registration_id: string;
   logo_url?: string;
 }
 
-export interface UpdateUserDTO {
+export interface UpdateUser {
   user_id: string;
   fullname: string;
   password?: string; 
@@ -56,8 +56,32 @@ export interface UpdateUserDTO {
   user_name?: string;
 }
 
-export interface InviteUserDTO {
-  org_id: string;
+export interface InviteUser {
   email: string;
-  invited_by_user_id: string;
+  role: string;
+}
+
+export type InvitationRole = 'superadmin' | 'admin' | 'manager' | 'viewer'; 
+export type InvitationStatus = 'pending' | 'accepted' | 'expired' | 'revoked';
+
+export interface Invitees {
+  invite_id: string;
+  email: string;
+  role: InvitationRole;
+  status: InvitationStatus;
+  created_by: string;
+  expires_at: string;
+  createdAt: string;  
+}
+
+export interface InvitationsResponse {
+  status: 'success' | 'error';
+  message: string;
+  data: Invitees[];
+  metadata: Record<string, unknown>;
+}
+
+export interface UpdateUserPayload {
+  user_id: string;
+  role: InvitationRole
 }

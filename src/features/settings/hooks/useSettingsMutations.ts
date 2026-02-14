@@ -1,30 +1,74 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updateOrganizationApi, updateUserProfileApi, inviteUserApi } from "../api/settingsApi"; 
+import { notify } from "@/components/global/Toast";
+import { updateOrganizationApi, updateUserRoleApi, removeUserFromOrgApi, updateUserProfileApi } from "../api/settingsApi";
+import { inviteUserApi } from "@/shared/invitations/api/inviteApi";
 
-export const useUpdateOrganization = () => {
+type MutationConfig = {
+  onSuccess?: () => void;
+};
+
+export const useUpdateOrganization = (config?: MutationConfig) => {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: updateOrganizationApi,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['update-org'] }); 
+      queryClient.invalidateQueries({ queryKey: ['view-org'] });
+      notify.success("Organization updated successfully");
+      config?.onSuccess?.(); 
+    },
+    onError: (error: any) => notify.error(error.message || "Update failed")
+  });
+};
+
+export const useInviteUser = (config?: MutationConfig) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: inviteUserApi,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['view-invites'] });
+      notify.success("Invitation sent!");
+      config?.onSuccess?.(); 
+    },
+    onError: (error: any) => notify.error(error.message || "Failed to send invite")
+  });
+};
+
+export const useUpdateUserRole = (config?: MutationConfig) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateUserRoleApi,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['view-org'] });
+      notify.success("Role updated successfully");
+      config?.onSuccess?.();
     },
   });
 };
 
-export const useUpdateUser = () => {
+export const useRemoveUserFromOrg = (config?: MutationConfig) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: removeUserFromOrgApi,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['view-org'] });
+      notify.success("Member removed successfully");
+      config?.onSuccess?.();
+    },
+  });
+};
+
+export const useUpdateUser = (config?: MutationConfig) => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: updateUserProfileApi,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['update-user'] });
+      queryClient.invalidateQueries({ queryKey: ['view-user'] });
+      notify.success("Profile updated successfully");
+      config?.onSuccess?.();
     },
-  });
-};
-
-export const useInviteUser = () => {  
-  return useMutation({
-    mutationFn: inviteUserApi,
+    onError: (error: Error) => {
+      notify.error(error.message || "Failed to update profile");
+    },
   });
 };

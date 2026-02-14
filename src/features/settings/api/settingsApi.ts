@@ -1,6 +1,6 @@
 import { api } from "@/lib/axiosConfig";
 import { handleError } from "@/utils/utils";
-import type { InviteUserDTO, OrganizationApiResponse, OrganizationData, UpdateOrgDTO, UpdateUserDTO, UserApiResponse, UserData } from "../types/settingsType";
+import type { OrganizationApiResponse, OrganizationData, UpdateOrg, UpdateUser, UpdateUserPayload, UserApiResponse, UserData } from "../types/settingsType";
 
 export const getInfoByOrgIdApi = async (): Promise<OrganizationData> =>{
   try{
@@ -20,7 +20,7 @@ export const getInfoByUserIdApi = async (userId:string): Promise<UserData> =>{
   }
 }
 
-export const updateOrganizationApi = async (payload: UpdateOrgDTO): Promise<OrganizationData> => {
+export const updateOrganizationApi = async (payload: UpdateOrg): Promise<OrganizationData> => {
   try {
     const response = await api.patch<{ data: OrganizationData }>(
       `/orgs/update-org/${payload.org_id}`, 
@@ -32,7 +32,7 @@ export const updateOrganizationApi = async (payload: UpdateOrgDTO): Promise<Orga
   }
 };
 
-export const updateUserProfileApi = async (payload: UpdateUserDTO): Promise<UserData> => {
+export const updateUserProfileApi = async (payload: UpdateUser): Promise<UserData> => {
   try {
     const response = await api.put<{ data: UserData }>(
       `/users/update-user/${payload.user_id}`, 
@@ -44,13 +44,22 @@ export const updateUserProfileApi = async (payload: UpdateUserDTO): Promise<User
   }
 };
 
-export const inviteUserApi = async (payload: InviteUserDTO): Promise<void> => {
-  try {
-    await api.post(
-      '/invitations/create', 
-      payload
-    );
-  } catch (error: unknown) {
-    throw new Error(handleError(error, "Failed to send invitation."));
-  }
-};
+
+  export const updateUserRoleApi = async (payload: UpdateUserPayload): Promise<void> => {
+    try {
+      const response = await api.patch('/users/update-role', payload);
+      return response.data;
+    } catch (error: unknown) {
+      throw new Error(handleError(error, "User role update failed."));
+    }
+  };
+
+  export const removeUserFromOrgApi = async (userId: string): Promise<void> => {
+    const payload = { user_id: userId };
+    try {
+      const response = await api.delete('/users/remove-user', { data: payload });
+      return response.data;
+    } catch (error: unknown) {
+      throw new Error(handleError(error, "Failed to remove user from organization."));
+    }
+  };

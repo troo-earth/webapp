@@ -1,12 +1,29 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import BgGradient from '@/components/ui/global/BgGradient';
 import AuthHeader from '@/features/auth/components/shared/AuthHeader';
 import { RegisterDecorative } from '@/features/auth/components/register/RegisterDecorative';
 import { RegisterModal } from '@/features/auth/components/register/RegisterModal';
 import AuthFooter from '@/features/auth/components/shared/AuthFooter';
+import InviteModal from '@/shared/invitations/components/InviteModal';
+import { Route } from '@/routes/(public)/register';
+import LoadingScreen from '@/components/global/Loading';
+import { useInviteFlow } from '@/shared/invitations/hooks/useInviteFlow';
+
 
 export const RegisterPage: React.FC = () => {
+
+  const inviteData = Route.useLoaderData();
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  const { clearInvite } = useInviteFlow();
+  
+  const invitedEmail = inviteData?.data?.valid ? inviteData.data.email : undefined;
+
+  if(isLoggingIn) {
+    return <LoadingScreen/>
+  }
+
   return (
     <div className="relative h-screen w-full flex flex-col items-center justify-center overflow-hidden bg-[#FDFDFD] font-nunito">
       
@@ -18,11 +35,12 @@ export const RegisterPage: React.FC = () => {
         <RegisterDecorative />
 
         <div className="col-span-1 lg:col-span-7 flex justify-center lg:justify-end h-full items-center">
-          <RegisterModal />
+          <RegisterModal onPendingChange={setIsLoggingIn} prefilledEmail={invitedEmail} onDismissInvite={clearInvite}/>
         </div>
       </div>
 
       <AuthFooter/>
+      <InviteModal data={inviteData} />
 
       <style>{`
         .animate-bounce-slow {

@@ -1,26 +1,37 @@
 import { LayoutDashboard } from "lucide-react";
 import { useEffect, useState } from "react";
 
-const SuccessOverlay = () => {
+interface SuccessOverlayProps {
+    onComplete: () => void;
+}
+
+const SuccessOverlay = ({ onComplete }: SuccessOverlayProps) => {
     const [showContent, setShowContent] = useState(false);
 
     useEffect(() => {
-        const timer = setTimeout(() => {
+        const showTimer = setTimeout(() => {
             setShowContent(true);
         }, 1500);
-        return () => clearTimeout(timer);
-    }, []);
+
+        const redirectTimer = setTimeout(() => {
+            onComplete();
+        }, 4000);
+
+        return () => {
+            clearTimeout(showTimer);
+            clearTimeout(redirectTimer);
+        };
+    }, [onComplete]);
 
     return (
-        <div className="fixed inset-0 z-100 flex items-center justify-center overflow-hidden">
+        <div className="fixed inset-0 z-99999 flex items-center justify-center overflow-hidden bg-black/20 backdrop-blur-sm">
             
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div className="w-25 h-25 rounded-full animate-expand-screen bg-[radial-gradient(circle_at_center,#051F1F_0%,#020C0C_100%)]"></div>
             </div>
 
-
             {showContent && (
-                <div className="relative z-20 flex flex-col items-center text-center animate-content-slide-up">
+                <div className="relative z-60 flex flex-col items-center text-center animate-content-slide-up">
                     
                     <div className="relative mb-10 group">
                         <div className="absolute inset-0 bg-primary rounded-full blur-[60px] opacity-30 animate-pulse"></div>
@@ -41,7 +52,7 @@ const SuccessOverlay = () => {
                     </h1>
                     
                     <div className="w-64 h-0.5 bg-white/10 rounded-full overflow-hidden relative">
-                        <div className="absolute inset-0 bg-white rounded-full animate-progress-fill box-shadow-[0_0_10px_white]"></div>
+                        <div className="absolute inset-0 bg-white rounded-full animate-progress-fill shadow-[0_0_10px_white]"></div>
                     </div>
 
                     <p className="text-[10px] text-white/30 font-bold uppercase tracking-widest mt-4 animate-pulse">
