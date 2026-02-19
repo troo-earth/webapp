@@ -8,9 +8,9 @@ export const settingsQueries = {
         staleTime: 30 * 60 * 1000,
         }),
         
-    viewUserInfo : (userId:string) => queryOptions({
+    viewUserInfo : () => queryOptions({
         queryKey: ['view-user'],
-        queryFn: () => getInfoByUserIdApi(userId),
+        queryFn: () => getInfoByUserIdApi(),
         staleTime: 30 * 60 * 1000,
         }),
 }

@@ -116,7 +116,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
 
           <div className="space-y-1">
             <InputField
-              label="Company Email"
+              label="Email"
               placeholder="name@company.com"
               type="email"
               value={formData.email}

@@ -1,6 +1,6 @@
 import { api } from "@/lib/axiosConfig";
 import { handleError } from "@/utils/utils";
-import type { OrganizationApiResponse, OrganizationData, UpdateOrg, UpdateUser, UpdateUserPayload, UserApiResponse, UserData } from "../types/settingsType";
+import type { OrganizationApiResponse, OrganizationData, UpdateOrg, UpdateUser, UpdateUserPayload, UserData } from "../types/settingsType";
 
 export const getInfoByOrgIdApi = async (): Promise<OrganizationData> =>{
   try{
@@ -11,10 +11,10 @@ export const getInfoByOrgIdApi = async (): Promise<OrganizationData> =>{
   }
 }
 
-export const getInfoByUserIdApi = async (userId:string): Promise<UserData> =>{
+export const getInfoByUserIdApi = async (): Promise<UserData> =>{
   try{
-    const response = await api.get<UserApiResponse>(`/users/view-user/${userId}`);
-    return response.data.data;
+    const response = await api.get(`/users/view-user`);
+    return response.data.data.user;
   } catch (error: unknown) {
     throw new Error(handleError(error, "Failed to fetch user details."));
   }
@@ -35,7 +35,7 @@ export const updateOrganizationApi = async (payload: UpdateOrg): Promise<Organiz
 export const updateUserProfileApi = async (payload: UpdateUser): Promise<UserData> => {
   try {
     const response = await api.put<{ data: UserData }>(
-      `/users/update-user/${payload.user_id}`, 
+      `/users/update-user`, 
       payload
     );
     return response.data.data;

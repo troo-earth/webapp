@@ -34,6 +34,7 @@ const ListCreditsPage = () => {
   const [listAmount, setListAmount] = useState<number>(0);
   const [inputValue, setInputValue] = useState<string>("");
   const [unitPrice, setUnitPrice] = useState(15.0);
+  const [priceInputValue, setPriceInputValue] = useState("15.00");
 
   // Unified Modal State
   const [modalState, setModalState] = useState<{
@@ -177,9 +178,20 @@ const ListCreditsPage = () => {
 
   // Handle price input
   const handlePriceInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseFloat(e.target.value);
-    if (!isNaN(value) && value >= 0) {
-      setUnitPrice(value);
+    const value = e.target.value;
+
+    if (value === "" || /^\d*\.?\d{0,2}$/.test(value)) {
+      setPriceInputValue(value);
+
+      if (value === "" || value === ".") {
+        setUnitPrice(0);
+        return;
+      }
+
+      const numValue = parseFloat(value);
+      if (!isNaN(numValue)) {
+        setUnitPrice(numValue);
+      }
     }
   };
 
@@ -379,10 +391,9 @@ const ListCreditsPage = () => {
                     <div className="flex items-center gap-3 border-b-2 border-gray-100 focus-within:border-[#5BA49F] transition-colors pb-2">
                       <DollarSign size={24} className="text-gray-300" />
                       <input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={unitPrice}
+                        type="text"
+                        inputMode="decimal"
+                        value={priceInputValue}
                         onChange={handlePriceInput}
                         className="w-full bg-transparent text-4xl font-black text-[#0F1F1F] border-none outline-none focus:ring-0 p-0 placeholder:text-gray-200"
                         placeholder="0.00"

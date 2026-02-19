@@ -54,27 +54,33 @@ export const ActiveListingPage = () => {
         </div>
 
         {/* Header Section */}
-        <div className="bg-white rounded-4xl border border-gray-100 shadow-sm p-8 mb-10">
-          <div className="flex gap-8 items-start justify-between">
-            <div className="max-w-3xl">
-              <p className="text-base text-gray-500 font-medium leading-relaxed">
-                Monitor your assets currently live on the troo.earth marketplace. 
-                Track real-time pricing, volume distribution, and public verification status for each listing.
-              </p>
-            </div>
+<div className="bg-white rounded-[2.5rem] md:rounded-[3rem] border border-gray-100 shadow-sm p-6 md:p-10 mb-10">
+  {/* Switch to flex-col on iPad, flex-row only on XL desktop */}
+  <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8">
+    
+    <div className="max-w-2xl">
+      <h1 className="text-3xl md:text-4xl font-black text-[#002B2B] mb-4">Active Listings</h1>
+      <p className="text-sm md:text-base text-gray-500 font-medium leading-relaxed">
+        Monitor your assets currently live on the troo.earth marketplace. 
+        Track real-time pricing, volume distribution, and public verification status.
+      </p>
+    </div>
 
-            {/* Primary Search Bar - Right side */}
-            <div className="flex gap-4 shrink-0 w-full max-w-md justify-end">
-              <SearchInput 
-                placeholder="Filter your active listings by project, batch serial, or region..." 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1"
-              />
-              <FilterButton onClick={() => {}} />
-            </div>
-          </div>
-        </div>
+    {/* Search & Filter: Takes full width on tablet to be usable */}
+    <div className="flex flex-col sm:flex-row gap-3 w-full xl:max-w-md shrink-0">
+      <div className="relative flex-1">
+        <SearchInput 
+          placeholder="Search listings..." 
+          className="w-full"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </div>
+      <FilterButton onClick={() => {}} className="w-full sm:w-auto" />
+    </div>
+
+  </div>
+</div>
 
         {/* Listings Responsive Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-6 md:gap-8">
