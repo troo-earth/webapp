@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/buttons/Button";
+import { notify } from "@/components/global/Toast";
 import { buyCreditsApi } from "@/shared/listings/api/listingApi";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/redux/store";
@@ -84,6 +85,7 @@ export const PurchaseModal = ({
   const { mutate: initializePayment, isPending } = useMutation({
     mutationFn: () => buyCreditsApi(listingId, org_id, amount),
     onSuccess: (secret) => setClientSecret(secret),
+    onError: (error: any) => notify.error(error.message || "Failed to initialize payment"),
   });
 
   useEffect(() => {

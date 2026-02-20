@@ -36,7 +36,7 @@ const ACCEPTED_DOC_TYPES = ["image/jpeg", "image/jpg", "image/png", "application
 export const onboardingSchema = z.object({
   companyName: z.string().min(2, "Company name must be at least 2 characters"),
   countryCode: z.string().max(4, "Please select a valid country"),
-  registrationId: z.string().min(5, "Registration ID is required"),
+  registrationId: z.string().min(5, "Proper registration ID is required"),
   
   logo: z.instanceof(File, { message: "Logo is required" })
     .refine((file) => file.size <= MAX_FILE_SIZE, `Max image size is 5MB.`)

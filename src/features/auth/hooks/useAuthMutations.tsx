@@ -39,7 +39,7 @@ export const useRegister = (options?: {
           });
           return; 
         } catch (error: any) {
-          notify.error(error?.response?.data?.message || "Failed to join organization");
+          notify.error(error.message || "Failed to join organization");
           navigate({ to: '/onboarding', replace: true });
           return;
         }
@@ -48,7 +48,7 @@ export const useRegister = (options?: {
       navigate({ to: '/onboarding', replace: true });
     },
     onError: (error: any) => {
-      notify.error(error?.response?.data?.message || "Registration failed");
+      notify.error(error.message || "Registration failed");
     }
   });
 };
@@ -88,7 +88,7 @@ export const useLogin = (options?: {
           });
           return; 
         } catch (error: any) {
-          const errMsg = error?.response?.data?.message || "Failed to join organization";
+          const errMsg = error.message || "Failed to join organization";
           notify.error(errMsg);
         }
       }
@@ -96,7 +96,7 @@ export const useLogin = (options?: {
       navigate({ to: '/explore', replace: true });
     },
     onError: (error: any) => {
-      notify.error(error?.response?.data?.message || "Login failed");
+      notify.error(error.message || "Login failed");
     }
   });
 };
@@ -105,7 +105,8 @@ export const useLogin = (options?: {
 export const useOnboarding = () => {
   return useMutation({
     mutationFn: async ({ formData, logoFile, proofFile }: OnboardingParams) => {
-      if (!logoFile || !proofFile) throw new Error("Files are missing");
+      if (!logoFile) throw new Error("Organization logo is required");
+      if (!proofFile) throw new Error("Proof of incorporation is required");
 
       const [logoUrl, proofUrl] = await Promise.all([
         uploadLogoApi(logoFile),
@@ -125,8 +126,8 @@ export const useOnboarding = () => {
     onSuccess: () => {
       notify.success("Organization onboarded successfully");
     },
-    onError: (error) => {
-      notify.error("Organization onboarding failed");
+    onError: (error: any) => {
+      notify.error(error.message || "Organization onboarding failed");
       console.error("Onboarding error:", error);
     }
   });

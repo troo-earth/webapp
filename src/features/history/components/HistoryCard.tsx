@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { notify } from "@/components/global/Toast";
 import type { HistoryType } from "../types/historyTypes";
 import { getCertificateApi } from "../api/getCertificateApi";
 import { generateCertificatePdf } from "../utils/generateCertificatePdf";
@@ -38,15 +38,15 @@ export const HistoryCard = ({ item, type }: HistoryCardProps) => {
           },
           logoSvg,
         );
-        toast.success("Certificate downloaded successfully!");
+        notify.success("Certificate downloaded successfully!");
       } catch (error) {
-        toast.error("Failed to generate certificate PDF");
+        notify.error("Failed to generate certificate PDF");
       } finally {
         setIsDownloading(false);
       }
     },
-    onError: (error: Error) => {
-      toast.error(error.message || "Failed to download certificate");
+    onError: (error: any) => {
+      notify.error(error.message || "Failed to download certificate");
       setIsDownloading(false);
     },
   });

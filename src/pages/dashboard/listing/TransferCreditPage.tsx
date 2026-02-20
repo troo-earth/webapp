@@ -7,7 +7,7 @@ import { useAuth } from '@/features/auth/hooks/useAuth';
 import { getMyHoldingsApi } from '@/features/portfolio/api/myHoldingsApi';
 import { transferCreditsApi } from '@/features/portfolio-actions/api/transferCreditsApi';
 import { ActionModal } from '@/components/ui/modal/ActionModal';
-import { toast } from 'sonner';
+import { notify } from '@/components/global/Toast';
 import LoadingScreen from '@/components/global/Loading';
 
 const TransferCreditsPage = () => {
@@ -60,7 +60,7 @@ const TransferCreditsPage = () => {
         data: response.data
       });
     },
-    onError: (error: Error) => {
+    onError: (error: any) => {
       setModalState({
         isOpen: true,
         type: 'error',
@@ -105,16 +105,16 @@ const TransferCreditsPage = () => {
 
   // Use the holding data directly
   const project = {
-    name: holding.projectName,
-    location: holding.location,
-    availableQuantity: holding.quantity,
+    name: holding.projectName || "Unnamed Project",
+    location: holding.location || "Location unavailable",
+    availableQuantity: holding.quantity ?? 0,
     unit: "tCO2e",
-    image: holding.image,
-    type: holding.impactFact,
-    registry: holding.serialPrefix,
-    vintageYear: holding.vintage,
-    methodology: holding.serialPrefix,
-    projectStartYear: holding.vintage
+    image: holding.image || "https://images.unsplash.com/photo-1466611653911-95081537e5b7?q=80&w=600&auto=format&fit=crop",
+    type: holding.impactFact || "Carbon Offset",
+    registry: holding.serialPrefix || "N/A",
+    vintageYear: holding.vintage || "N/A",
+    status: holding.status || "active",
+    pricePaid: holding.pricePaid ?? 0,
   };
 
   const maxTransfer = project.availableQuantity;
@@ -162,7 +162,7 @@ const TransferCreditsPage = () => {
   const handleTransfer = () => {
     // Validate inputs
     if (!recipientOrgCode.trim() || !projectId || transferAmount <= 0) {
-      toast.error('Please fill in all required fields');
+      notify.error('Please fill in all required fields');
       return;
     }
 

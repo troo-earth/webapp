@@ -19,7 +19,7 @@ import { useAuth } from "@/features/auth/hooks/useAuth";
 import { getMyHoldingsApi } from "@/features/portfolio/api/myHoldingsApi";
 import { sellCreditsApi } from "@/features/portfolio-actions/api/sellCreditsApi";
 import { ActionModal } from "@/components/ui/modal/ActionModal";
-import { toast } from "sonner";
+import { notify } from "@/components/global/Toast";
 import LoadingScreen from "@/components/global/Loading";
 
 const ListCreditsPage = () => {
@@ -77,7 +77,7 @@ const ListCreditsPage = () => {
         data: response.data,
       });
     },
-    onError: (error: Error) => {
+    onError: (error: any) => {
       setModalState({
         isOpen: true,
         type: "error",
@@ -199,12 +199,12 @@ const ListCreditsPage = () => {
   const handlePostListing = () => {
     // Validate inputs
     if (!orgId || !projectId || listAmount <= 0 || unitPrice <= 0) {
-      toast.error("Please fill in all required fields with valid values");
+      notify.error("Please fill in all required fields with valid values");
       return;
     }
 
     if (listAmount > project.availableQuantity) {
-      toast.error(
+      notify.error(
         `Cannot list more than ${project.availableQuantity} ${project.unit}`,
       );
       return;

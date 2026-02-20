@@ -14,6 +14,8 @@ import {
   Download,
   Clock,
   Globe,
+  Hash,
+  Layers,
 } from "lucide-react";
 import { Link, useParams } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -37,6 +39,7 @@ export const PortfolioProjectDetailPage = () => {
     data: holdingData,
     isLoading,
     isError,
+    error,
   } = useQuery(portfolioQueries.holdingProject(holdingId));
 
   const project = holdingData;
@@ -44,8 +47,20 @@ export const PortfolioProjectDetailPage = () => {
   if (isLoading) return <LoadingScreen />;
   if (isError || !project)
     return (
-      <div className="p-20 text-center font-bold">
-        Project data unavailable
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <p className="text-xl font-bold text-gray-900">Project data unavailable</p>
+          {error && (
+            <p className="text-sm text-red-500 font-medium">{error.message}</p>
+          )}
+          <Link
+            to="/portfolio"
+            className="inline-flex items-center gap-2 text-primary hover:underline font-bold text-sm"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Portfolio
+          </Link>
+        </div>
       </div>
     );
 
@@ -96,10 +111,10 @@ export const PortfolioProjectDetailPage = () => {
               </h1>
 
               <div className="flex flex-wrap items-center gap-x-8 gap-y-3 text-gray-500 font-bold text-sm">
-                {(project?.city || project?.countryCode) && (
+                {(project?.city || project?.state || project?.countryCode) && (
                   <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-primary" /> {project.city}
-                    {project.city && ","} {getCountryName(project.countryCode)}
+                    <MapPin className="w-4 h-4 text-primary" />
+                    {[project.city, project.state, getCountryName(project.countryCode)].filter(Boolean).join(", ") || "Location unavailable"}
                   </div>
                 )}
                 {project?.startDate && (
@@ -198,13 +213,33 @@ export const PortfolioProjectDetailPage = () => {
                 </div>
 
                 <div className="space-y-3 pt-6 border-t border-gray-50">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tight">
+                      Project No.
+                    </span>
+                    <span className="text-sm font-black text-gray-900 flex items-center gap-1">
+                      <Hash className="w-3 h-3 text-primary/40" />
+                      {project?.num ?? "N/A"}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tight">
+                      Sector
+                    </span>
+                    <span className="text-sm font-black text-gray-900 flex items-center gap-1">
+                      <Layers className="w-3 h-3 text-primary/40" />
+                      {project?.sector?.title ?? "N/A"}
+                    </span>
+                  </div>
+
                   {project?.estimatedAnnualMitigations && (
                     <div className="flex justify-between items-center">
                       <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tight">
                         Total Volume
                       </span>
                       <span className="text-sm font-black text-gray-900">
-                        {project?.estimatedAnnualMitigations
+                        {project.estimatedAnnualMitigations
                           .reduce((acc, curr) => {
                             return acc + (curr.estimatedMitigation || 0);
                           }, 0)
@@ -231,12 +266,26 @@ export const PortfolioProjectDetailPage = () => {
                   )}
                 </div>
 
-                <div className="mt-6 flex items-center justify-center gap-2 py-3 px-4 bg-gray-50 rounded-xl border border-gray-100">
-                  <ShieldCheck className="w-4 h-4 text-gray-400" />
-                  <span className="text-[10px] font-black text-gray-500 uppercase tracking-tight">
-                    Registry Verified
-                  </span>
-                </div>
+                {project?.publicUrl ? (
+                  <a
+                    href={project.publicUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-6 flex items-center justify-center gap-2 py-3 px-4 bg-gray-50 rounded-xl border border-gray-100 hover:border-primary/20 hover:bg-primary/5 transition-all group"
+                  >
+                    <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-primary" />
+                    <span className="text-[10px] font-black text-gray-500 group-hover:text-primary uppercase tracking-tight">
+                      View on Registry
+                    </span>
+                  </a>
+                ) : (
+                  <div className="mt-6 flex items-center justify-center gap-2 py-3 px-4 bg-gray-50 rounded-xl border border-gray-100">
+                    <ShieldCheck className="w-4 h-4 text-gray-400" />
+                    <span className="text-[10px] font-black text-gray-500 uppercase tracking-tight">
+                      Registry Verified
+                    </span>
+                  </div>
+                )}
               </div>
 
               {project?.otherBenefits && project?.otherBenefits.length > 0 && (

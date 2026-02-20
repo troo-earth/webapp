@@ -129,6 +129,10 @@ export interface HoldingProject {
 export interface HoldingProjectResponse {
   status: string;
   message: string;
-  data: HoldingProject;
+  data: {
+    holding_id: string;
+    project_id: string;
+    project: HoldingProject;
+  };
   metadata: Record<string, any>;
 }

@@ -67,7 +67,8 @@ export const getHoldingProjectApi = async (holdingId: string): Promise<HoldingPr
     const response = await api.post<HoldingProjectResponse>('/holdings/view-project', {
       holding_id: holdingId
     });
-    return response.data.data;
+    const { project, holding_id: hId, project_id } = response.data.data;
+    return { ...project, holding_id: hId, project_id };
   } catch (error: unknown) {
     throw new Error(handleError(error, "Failed to fetch holding project details."));
   }

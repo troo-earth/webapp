@@ -43,7 +43,7 @@ export const CancelListingModal = ({ isOpen, onClose, listing }: CancelListingMo
         message: `Your listing for <span class="text-primary font-bold">${listing.quantity} tCO2e</span> has been canceled successfully. Credits have been returned to your portfolio.`,
       });
     },
-    onError: (error: Error) => {
+    onError: (error: any) => {
       // Show error modal
       setModalState({
         isOpen: true,

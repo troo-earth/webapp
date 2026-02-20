@@ -126,10 +126,10 @@ const SettingsPage = () => {
     if (!org?.org_id) return;
     const validation = orgSchema.safeParse(orgForm);
     if (!validation.success) {
-      alert(validation.error.issues[0].message);
+      notify.error(validation.error.issues[0].message);
       return;
     }
-    
+
     updateOrgMutation.mutate({
       org_id: org.org_id,
       org_name: orgForm.name,
@@ -160,7 +160,7 @@ const SettingsPage = () => {
   const handleInvite = () => {
     const validation = inviteSchema.safeParse(inviteForm);
     if (!validation.success) {
-      alert(validation.error.issues[0].message);
+      notify.error(validation.error.issues[0].message);
       return;
     }
 
@@ -179,7 +179,7 @@ const SettingsPage = () => {
         notify.success("Invitation resent successfully");
         setResendingEmail(null);
       },
-      onError: (error) => {
+      onError: (error: any) => {
         notify.error(error.message || "Failed to resend invitation.");
         setResendingEmail(null);
       }
@@ -195,7 +195,7 @@ const SettingsPage = () => {
           setActiveTab('members');
         }
       },
-      onError: (error) => {
+      onError: (error: any) => {
         notify.error(error.message || "Failed to revoke invitation.");
       }
     });
@@ -231,7 +231,7 @@ const SettingsPage = () => {
       setOrgForm(prev => ({ ...prev, logoUrl: publicUrl }));
     } catch (error) {
       console.error("Upload failed", error);
-      alert("Failed to upload image"); 
+      notify.error("Failed to upload image");
     } finally {
       setIsUploadingLogo(false);
     }
