@@ -15,13 +15,7 @@ export const loginSchema = z.object({
 export const registerSchema = z.object({
   fullName: z.string().min(1, "Full name is required"),
   username: z.string().optional(),
-  email: z
-    .email("Invalid email address")
-    .refine((val) => {
-      const publicDomains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com'];
-      const domain = val.split('@')[1];
-      return !publicDomains.includes(domain?.toLowerCase());
-    }, { message: "Please use a company email address" }),
+  email: z.string().email("Invalid email address"),
   password: z
     .string()
     .min(8, "Password must be at least 8 characters")
@@ -35,7 +29,6 @@ export const registerSchema = z.object({
   path: ["confirmPassword"],
 });
 
-
 const MAX_FILE_SIZE = 5 * 1024 * 1024; 
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 const ACCEPTED_DOC_TYPES = ["image/jpeg", "image/jpg", "image/png", "application/pdf"];
@@ -43,7 +36,7 @@ const ACCEPTED_DOC_TYPES = ["image/jpeg", "image/jpg", "image/png", "application
 export const onboardingSchema = z.object({
   companyName: z.string().min(2, "Company name must be at least 2 characters"),
   countryCode: z.string().max(4, "Please select a valid country"),
-  registrationId: z.string().min(5, "Registration ID is required"),
+  registrationId: z.string().min(5, "Proper registration ID is required"),
   
   logo: z.instanceof(File, { message: "Logo is required" })
     .refine((file) => file.size <= MAX_FILE_SIZE, `Max image size is 5MB.`)

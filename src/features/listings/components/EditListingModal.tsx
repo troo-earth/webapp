@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/buttons/Button';
-import { toast } from 'sonner';
+import { notify } from '@/components/global/Toast';
 import { editListingApi } from '../api/listingsApi';
 import { ActionModal } from '@/components/ui/modal/ActionModal';
 import type { Listing } from '../types/listingTypes';
@@ -50,7 +50,7 @@ export const EditListingModal = ({ isOpen, onClose, listing }: EditListingModalP
         message: `Your listing has been updated successfully. New quantity: <span class="text-primary font-bold">${quantity} tCO2e</span> at <span class="text-primary font-bold">$${price.toFixed(2)}</span> per unit.`,
       });
     },
-    onError: (error: Error) => {
+    onError: (error: any) => {
       // Show error modal
       setModalState({
         isOpen: true,
@@ -65,7 +65,7 @@ export const EditListingModal = ({ isOpen, onClose, listing }: EditListingModalP
     e.preventDefault();
     
     if (quantity <= 0 || price <= 0) {
-      toast.error('Quantity and price must be greater than 0');
+      notify.error('Quantity and price must be greater than 0');
       return;
     }
 

@@ -9,7 +9,7 @@ import { retireCreditsApi } from '@/features/portfolio-actions/api/retireCredits
 import { getCertificateApi } from '@/features/history/api/getCertificateApi';
 import { generateCertificatePdf } from '@/features/history/utils/generateCertificatePdf';
 import { ActionModal } from '@/components/ui/modal/ActionModal';
-import { toast } from 'sonner';
+import { notify } from '@/components/global/Toast';
 import LoadingScreen from '@/components/global/Loading';
 import logoSvg from "@/assets/svg/logo/logo.svg";
 
@@ -60,7 +60,7 @@ const RetireCreditsPage = () => {
         data: response.data
       });
     },
-    onError: (error: Error) => {
+    onError: (error: any) => {
       setModalState({
         isOpen: true,
         type: 'error',
@@ -73,7 +73,7 @@ const RetireCreditsPage = () => {
 
   const handleDownload = async (certificateId: string) => {
     try {
-      toast.info('Generating certificate...');
+      notify.info('Generating certificate...');
       const certificateData = await getCertificateApi(certificateId);
       
       await generateCertificatePdf(
@@ -88,9 +88,9 @@ const RetireCreditsPage = () => {
         logoSvg
       );
       
-      toast.success('Certificate downloaded successfully!');
+      notify.success('Certificate downloaded successfully!');
     } catch (error) {
-      toast.error('Failed to download certificate');
+      notify.error('Failed to download certificate');
       console.error('Certificate download error:', error);
     }
   };

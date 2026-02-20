@@ -53,7 +53,7 @@ const Sidebar: React.FC = () => {
         {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
       </button>
 
-      <div className="h-20 flex items-center justify-center px-6 pt-4 overflow-hidden mb-2">
+      <div className="h-18 flex items-center justify-center px-6  overflow-hidden mb-2">
         {!isCollapsed && <Logo size="small" />}
       </div>
 

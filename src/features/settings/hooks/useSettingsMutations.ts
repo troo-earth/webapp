@@ -14,9 +14,9 @@ export const useUpdateOrganization = (config?: MutationConfig) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['view-org'] });
       notify.success("Organization updated successfully");
-      config?.onSuccess?.(); 
+      config?.onSuccess?.();
     },
-    onError: (error: any) => notify.error(error.message || "Update failed")
+    onError: (error: any) => notify.error(error.message || "Failed to update organization")
   });
 };
 
@@ -27,7 +27,7 @@ export const useInviteUser = (config?: MutationConfig) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['view-invites'] });
       notify.success("Invitation sent!");
-      config?.onSuccess?.(); 
+      config?.onSuccess?.();
     },
     onError: (error: any) => notify.error(error.message || "Failed to send invite")
   });
@@ -42,6 +42,7 @@ export const useUpdateUserRole = (config?: MutationConfig) => {
       notify.success("Role updated successfully");
       config?.onSuccess?.();
     },
+    onError: (error: any) => notify.error(error.message || "Failed to update role"),
   });
 };
 
@@ -54,6 +55,7 @@ export const useRemoveUserFromOrg = (config?: MutationConfig) => {
       notify.success("Member removed successfully");
       config?.onSuccess?.();
     },
+    onError: (error: any) => notify.error(error.message || "Failed to remove member"),
   });
 };
 
@@ -67,7 +69,7 @@ export const useUpdateUser = (config?: MutationConfig) => {
       notify.success("Profile updated successfully");
       config?.onSuccess?.();
     },
-    onError: (error: Error) => {
+    onError: (error: any) => {
       notify.error(error.message || "Failed to update profile");
     },
   });

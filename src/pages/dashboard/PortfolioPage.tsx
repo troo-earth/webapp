@@ -118,10 +118,14 @@ export const PortfolioPage = () => {
             <PortfolioSummary total={stats.total} activeCount={stats.active}  />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+        {/* CHANGE: Changed grid to stack by default and lg. 
+            Used xl:grid-cols-12 to trigger the side-by-side layout only on desktop.
+        */}
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 xl:gap-12">
             
             {/* LEFT: MAIN ASSETS */}
-            <div className="lg:col-span-8">
+            {/* CHANGE: xl:col-span-8 for desktop, full width for tablet/ipad */}
+            <div className="xl:col-span-8">
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-xl font-extrabold text-[#002B2B] flex items-center gap-2">
                         Active Assets
@@ -155,82 +159,43 @@ export const PortfolioPage = () => {
             </div>
 
             {/* RIGHT: ACTIVITY SIDEBARS */}
-            <div className="lg:col-span-4 space-y-8">
-                
-                {/* 1. Market Activity Sidebar */}
+            {/* CHANGE: xl:col-span-4 for desktop, full width for iPad */}
+            <div className="xl:col-span-4 space-y-8">
                <div className="bg-white rounded-[2.5rem] p-6 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] border border-gray-100">
-    <div className="flex items-center gap-3 mb-6 border-b border-gray-50 pb-5">
-        <div className="bg-[#5BA49F]/10 p-2.5 rounded-xl">
-            <BarChart3 size={20} className="text-[#5BA49F]" />
-        </div>
-        <div>
-            <h2 className="text-lg font-black text-[#002B2B] tracking-tight">Active Listings</h2>
-            <p className="text-[10px] text-gray-400 font-medium mt-0.5">
-              {activeListings.length} active • {allListings.length} total
-            </p>
-        </div>
-    </div>
+                  <div className="flex items-center gap-3 mb-6 border-b border-gray-50 pb-5">
+                      <div className="bg-[#5BA49F]/10 p-2.5 rounded-xl">
+                          <BarChart3 size={20} className="text-[#5BA49F]" />
+                      </div>
+                      <div>
+                          <h2 className="text-lg font-black text-[#002B2B] tracking-tight">Active Listings</h2>
+                          <p className="text-[10px] text-gray-400 font-medium mt-0.5">
+                            {activeListings.length} active • {allListings.length} total
+                          </p>
+                      </div>
+                  </div>
 
-    <div className="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-        {listingsLoading ? (
-            <p className="text-sm text-gray-400 text-center py-10 font-medium italic">Loading...</p>
-        ) : allListings.length === 0 ? (
-             <p className="text-sm text-gray-400 text-center py-10 font-medium italic">No listings yet.</p>
-        ) : activeListings.length === 0 ? (
-             <p className="text-sm text-gray-400 text-center py-10 font-medium italic">
-               No active listings. 
-               <br />
-               <span className="text-xs">({allListings.length} closed)</span>
-             </p>
-        ) : (
-            activeListings.slice(-4).map((listing, index, arr) => (
-                <ListingSidebarItem 
-                  key={listing.id} 
-                  listing={listing} 
-                  isLast={index === arr.length - 1} 
-                />
-            ))
-        )}
-    </div>
-    
-    <div className="mt-6 pt-5 border-t border-gray-50">
-        <Link to="/listings" className="w-full flex items-center justify-center gap-2 py-3 bg-gray-50 rounded-2xl text-[10px] font-black text-gray-400 uppercase tracking-widest hover:bg-[#002B2B] hover:text-white transition-all">
-            View All {activeListings.length} Active Listings
-        </Link>
-    </div>
-</div>
-
-                {/* 2. Active Transfers Sidebar 
-                <div className="bg-white rounded-[2.5rem] p-6 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] border border-gray-100">
-                    <div className="flex items-center gap-3 mb-6 border-b border-gray-50 pb-5">
-                        <div className="bg-primary/10 p-2.5 rounded-xl text-primary">
-                            <ArrowLeftRight size={20} />
-                        </div>
-                        <div>
-                            <h2 className="text-lg font-black text-[#002B2B] tracking-tight">Active Transfers</h2>
-                            <p className="text-[10px] text-gray-400 font-medium mt-0.5">
-                              {activeTransfers.length} {activeTransfers.length === 1 ? 'transfer' : 'transfers'}
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                        {activeTransfers.length === 0 ? (
-                             <p className="text-sm text-gray-400 text-center py-10 font-medium italic">No active transfers.</p>
-                        ) : (
-                            activeTransfers.map((t, index) => (
-                                <TransferSidebarItem key={t.id} transfer={t} isLast={index === activeTransfers.length - 1} />
-                            ))
-                        )}
-                    </div>
-                    
-                    <div className="mt-6 pt-5 border-t border-gray-50">
-                        <Link to="/portfolio/transactions" className="w-full flex items-center justify-center gap-2 py-3 bg-gray-50 rounded-2xl text-[10px] font-black text-gray-400 uppercase tracking-widest hover:bg-primary hover:text-white transition-all">
-                            Open Transaction Manager
-                        </Link>
-                    </div>
-                </div>
- */}
+                  <div className="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                      {listingsLoading ? (
+                          <p className="text-sm text-gray-400 text-center py-10 font-medium italic">Loading...</p>
+                      ) : allListings.length === 0 ? (
+                           <p className="text-sm text-gray-400 text-center py-10 font-medium italic">No listings yet.</p>
+                      ) : (
+                          activeListings.slice(-4).map((listing, index, arr) => (
+                              <ListingSidebarItem 
+                                key={listing.id} 
+                                listing={listing} 
+                                isLast={index === arr.length - 1} 
+                              />
+                          ))
+                      )}
+                  </div>
+                  
+                  <div className="mt-6 pt-5 border-t border-gray-50">
+                      <Link to="/listings" className="w-full flex items-center justify-center gap-2 py-3 bg-gray-50 rounded-2xl text-[10px] font-black text-gray-400 uppercase tracking-widest hover:bg-[#002B2B] hover:text-white transition-all">
+                          View All {activeListings.length} Active Listings
+                      </Link>
+                  </div>
+              </div>
             </div>
 
         </div>

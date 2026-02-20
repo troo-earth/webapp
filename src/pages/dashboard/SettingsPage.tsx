@@ -46,8 +46,8 @@ const SettingsPage = () => {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isEditRoleOpen, setIsEditRoleOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [isResendModalOpen, setIsResendModalOpen] = useState(false);
   const [isRevokeModalOpen, setIsRevokeModalOpen] = useState(false);
+  const [resendingEmail, setResendingEmail] = useState<string | null>(null);
 
   // Selections
   const [selectedMember, setSelectedMember] = useState<any>(null);
@@ -59,7 +59,7 @@ const SettingsPage = () => {
 
   // --- Queries ---
   const { data: org, isLoading: isOrgLoading } = useQuery(settingsQueries.viewOrgInfo());
-  const { data: userInfo, isLoading: isUserLoading } = useQuery(settingsQueries.viewUserInfo(user?.user_id));
+  const { data: userInfo, isLoading: isUserLoading } = useQuery(settingsQueries.viewUserInfo());
   const { data: inviteesInfo, isLoading: isInviteesLoading } = useQuery(inviteQueries.viewOrgInvitees());
 
   const employees = org?.employees || [];
@@ -126,10 +126,10 @@ const SettingsPage = () => {
     if (!org?.org_id) return;
     const validation = orgSchema.safeParse(orgForm);
     if (!validation.success) {
-      alert(validation.error.issues[0].message);
+      notify.error(validation.error.issues[0].message);
       return;
     }
-    
+
     updateOrgMutation.mutate({
       org_id: org.org_id,
       org_name: orgForm.name,
@@ -160,7 +160,7 @@ const SettingsPage = () => {
   const handleInvite = () => {
     const validation = inviteSchema.safeParse(inviteForm);
     if (!validation.success) {
-      alert(validation.error.issues[0].message);
+      notify.error(validation.error.issues[0].message);
       return;
     }
 
@@ -172,11 +172,16 @@ const SettingsPage = () => {
     });
   };
 
-  const handleResend = () => {
-    if (!selectedInvite) return;
-    resendInviteMutation.mutate({ email: selectedInvite.email }, {
+  const handleResend = (email: string) => {
+    setResendingEmail(email);
+    resendInviteMutation.mutate({ email }, {
       onSuccess: () => {
-        setIsResendModalOpen(false);
+        notify.success("Invitation resent successfully");
+        setResendingEmail(null);
+      },
+      onError: (error: any) => {
+        notify.error(error.message || "Failed to resend invitation.");
+        setResendingEmail(null);
       }
     });
   };
@@ -186,6 +191,12 @@ const SettingsPage = () => {
     revokeInviteMutation.mutate({ email: selectedInvite.email }, {
       onSuccess: () => {
         setIsRevokeModalOpen(false);
+        if (pendingInvitations.length <= 1) {
+          setActiveTab('members');
+        }
+      },
+      onError: (error: any) => {
+        notify.error(error.message || "Failed to revoke invitation.");
       }
     });
   };
@@ -220,7 +231,7 @@ const SettingsPage = () => {
       setOrgForm(prev => ({ ...prev, logoUrl: publicUrl }));
     } catch (error) {
       console.error("Upload failed", error);
-      alert("Failed to upload image"); 
+      notify.error("Failed to upload image");
     } finally {
       setIsUploadingLogo(false);
     }
@@ -235,33 +246,37 @@ const SettingsPage = () => {
   if (isOrgLoading || isUserLoading || isInviteesLoading) return <LoadingScreen/>;
 
   return (
-    <div className="mx-auto space-y-16 p-8">
+    <div className="mx-auto space-y-10 md:space-y-16 p-4 md:p-8 max-w-7xl overflow-x-hidden">
       {!isRestricted && (
-      <div className='flex flex-col gap-16'>
+      <div className='flex flex-col gap-10 md:gap-16'>
         
         {/* Organization Settings */}
         <section>
-          <div className="mb-6">
-            <h2 className="text-2xl font-black text-[#0F1F1F]">Organization Settings</h2>
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Manage your entity profile</p>
+          <div className="mb-6 px-2">
+            <h2 className="text-xl md:text-2xl font-black text-[#0F1F1F]">Organization Settings</h2>
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Manage your entity profile</p>
           </div>
-          <div className="bg-white/60 backdrop-blur-xl rounded-[2.5rem] border border-white p-8 shadow-sm flex flex-col md:flex-row gap-10 items-center">
-            <div className="w-32 h-32 rounded-4xl bg-linear-to-br from-primary/10 to-primary/5 border-2 border-dashed border-primary/20 flex items-center justify-center overflow-hidden relative">
+          
+          <div className="bg-white/60 backdrop-blur-xl rounded-[2rem] md:rounded-[2.5rem] border border-white p-6 md:p-8 shadow-sm flex flex-col lg:flex-row gap-6 md:gap-10 items-center">
+            {/* Logo Section - Scaled for mobile */}
+            <div className="w-24 h-24 md:w-32 md:h-32 rounded-3xl md:rounded-4xl bg-linear-to-br from-primary/10 to-primary/5 border-2 border-dashed border-primary/20 flex items-center justify-center overflow-hidden shrink-0 relative">
               {org?.logo_url ? (
                 <img src={org.logo_url} alt="Logo" className="w-full h-full object-cover" />
               ) : (
-                <Building2 className="w-10 h-10 text-primary/40" />
+                <Building2 className="w-8 h-8 md:w-10 md:h-10 text-primary/40" />
               )}
             </div>
-            <div className="flex-1 space-y-4">
+
+            <div className="flex-1 space-y-6 w-full text-center lg:text-left">
               <div>
                 <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Legal Entity Name</label>
-                <h3 className="text-2xl font-bold text-[#0F1F1F]">{org?.org_name}</h3>
+                <h3 className="text-xl md:text-2xl font-bold text-[#0F1F1F] break-words">{org?.org_name}</h3>
               </div>
-              <div className="flex flex-wrap gap-6">
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap gap-4 md:gap-6 justify-center lg:justify-start">
                 <div>
                   <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Organization ID</label>
-                  <div className="flex items-center gap-2 mt-1 bg-primary/5 px-3 py-1.5 rounded-lg border border-primary/10">
+                  <div className="flex items-center justify-center lg:justify-start gap-2 mt-1 bg-primary/5 px-3 py-1.5 rounded-lg border border-primary/10">
                     <code className="text-xs font-bold text-primary">{org?.org_code}</code>
                     <button onClick={() => copyToClipboard(org?.org_code || '')} className="text-primary/60 hover:text-primary">
                       {copied ? <CheckCircle2 size={14} /> : <Copy size={14} />}
@@ -278,21 +293,21 @@ const SettingsPage = () => {
                 </div>
               </div>
             </div>
-            <Button className='bg-primary' onClick={() => setIsOrgModalOpen(true)}>Edit Profile</Button>
+            <Button className='bg-primary w-full lg:w-auto px-8' onClick={() => setIsOrgModalOpen(true)}>Edit Profile</Button>
           </div>
         </section>
 
         {/* User Access Section */}
         <section>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4 px-2">
             <div>
-              <h2 className="text-2xl font-black text-[#0F1F1F]">User Access</h2>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Manage team roles and permissions</p>
+              <h2 className="text-xl md:text-2xl font-black text-[#0F1F1F]">User Access</h2>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Manage team roles and permissions</p>
             </div>
             <div className="flex gap-3">
               {canSeeInvitations && (
                 <Button 
-                    className="bg-[#0F1F1F] text-white px-5 py-2.5 rounded-2xl flex items-center gap-2 text-sm font-bold hover:opacity-90 transition-all shadow-lg shadow-black/5"
+                    className="w-full sm:w-auto bg-[#0F1F1F] text-white px-5 py-2.5 rounded-2xl flex items-center justify-center gap-2 text-sm font-bold hover:opacity-90 transition-all shadow-lg shadow-black/5"
                     onClick={() => setIsInviteModalOpen(true)}
                 >
                     <UserPlus size={16} /> Invite User
@@ -301,26 +316,27 @@ const SettingsPage = () => {
             </div>
           </div>
 
-          <div className="flex gap-8 mb-6 border-b border-gray-100 px-2">
-            <button 
+          {/* Responsive Tabs - Scrollable on mobile */}
+          <div className="flex gap-4 sm:gap-6 md:gap-8 mb-6 border-b border-gray-100 px-2 overflow-x-auto no-scrollbar whitespace-nowrap">
+            <button
               onClick={() => setActiveTab('members')}
-              className={`pb-4 text-sm font-black uppercase tracking-widest transition-all relative ${
+              className={`pb-3 sm:pb-4 text-[11px] sm:text-xs md:text-sm font-black uppercase tracking-widest transition-all relative shrink-0 ${
                 activeTab === 'members' ? 'text-primary' : 'text-gray-400 hover:text-gray-600'
               }`}
             >
               Members
               {activeTab === 'members' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-full" />}
             </button>
-            
+
             {canSeeInvitations && pendingInvitations.length > 0 && (
-              <button 
+              <button
                 onClick={() => setActiveTab('invitations')}
-                className={`pb-4 text-sm font-black uppercase tracking-widest transition-all relative flex items-center gap-2 ${
+                className={`pb-3 sm:pb-4 text-[11px] sm:text-xs md:text-sm font-black uppercase tracking-widest transition-all relative flex items-center gap-1.5 sm:gap-2 shrink-0 ${
                   activeTab === 'invitations' ? 'text-primary' : 'text-gray-400 hover:text-gray-600'
                 }`}
               >
                 Invitations
-                <span className="bg-gray-100 text-[#0F1F1F] px-2 py-0.5 rounded-full text-[10px]">
+                <span className="bg-gray-100 text-[#0F1F1F] px-1.5 sm:px-2 py-0.5 rounded-full text-[10px]">
                   {pendingInvitations.length || 0}
                 </span>
                 {activeTab === 'invitations' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-full" />}
@@ -328,18 +344,20 @@ const SettingsPage = () => {
             )}
           </div>
 
-          <div className="bg-white/40 backdrop-blur-md rounded-[2.5rem] border border-white overflow-hidden shadow-sm">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-gray-100">
-                  <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-400">User</th>
-                  {activeTab === 'members' && <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-400">Username</th>}
-                  <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-400">Role</th>
-                  <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-gray-400 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {activeTab === 'members' ? (
+          {/* TABLE FIX: Added overflow-x-auto wrapper */}
+          <div className="bg-white/40 backdrop-blur-md rounded-2xl sm:rounded-[1.5rem] md:rounded-[2.5rem] border border-white shadow-sm overflow-hidden">
+            <div className="overflow-x-auto custom-scrollbar">
+              <table className="w-full text-left border-collapse min-w-[480px] sm:min-w-[560px] lg:min-w-[700px]">
+                <thead>
+                  <tr className="border-b border-gray-100">
+                    <th className="px-4 sm:px-6 md:px-8 py-4 sm:py-5 text-[10px] font-black uppercase tracking-widest text-gray-400">User</th>
+                    {activeTab === 'members' && <th className="px-4 sm:px-6 md:px-8 py-4 sm:py-5 text-[10px] font-black uppercase tracking-widest text-gray-400">Username</th>}
+                    <th className="px-4 sm:px-6 md:px-8 py-4 sm:py-5 text-[10px] font-black uppercase tracking-widest text-gray-400">Role</th>
+                    <th className="px-4 sm:px-6 md:px-8 py-4 sm:py-5 text-[10px] font-black uppercase tracking-widest text-gray-400 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {activeTab === 'members' ? (
                   employees.map((emp) => {
                     const hasPermission = canManage(currentUserRole, emp.role || 'viewer');
                     const isSelf = emp.user_id === userId;
@@ -398,8 +416,8 @@ const SettingsPage = () => {
                       </td>
                       <td className="px-8 py-5 text-right">
                         <div className="flex items-center justify-end gap-2 ">
-                          <button onClick={() => { setSelectedInvite(inv); setIsResendModalOpen(true); }} className="p-2 hover:bg-green-50 text-gray-400 hover:text-green-600 rounded-lg" title="Resend">
-                            <RotateCcw size={16} />
+                          <button onClick={() => handleResend(inv.email)} disabled={resendingEmail === inv.email} className="p-2 hover:bg-green-50 text-gray-400 hover:text-green-600 rounded-lg disabled:opacity-50" title="Resend">
+                            <RotateCcw size={16} className={resendingEmail === inv.email ? 'animate-spin' : ''} />
                           </button>
                           <button onClick={() => { setSelectedInvite(inv); setIsRevokeModalOpen(true); }} className="p-2 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-lg" title="Revoke">
                             <XCircle size={16} />
@@ -409,8 +427,10 @@ const SettingsPage = () => {
                     </tr>
                   ))
                 )}
-              </tbody>
-            </table>
+              
+                </tbody>
+              </table>
+            </div>
           </div>
         </section>
       </div>
@@ -418,24 +438,24 @@ const SettingsPage = () => {
 
       {/* Personal Settings Section */}
       <section>
-        <div className="mb-8">
-          <h2 className="text-2xl font-black text-[#0F1F1F]">Personal Settings</h2>
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Account identity & security</p>
+        <div className="mb-8 px-2">
+          <h2 className="text-xl md:text-2xl font-black text-[#0F1F1F]">Personal Settings</h2>
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Account identity & security</p>
         </div>
-        <div className="bg-white/60 backdrop-blur-xl rounded-[2.5rem] border border-white p-10 shadow-sm relative overflow-hidden">
-          <div className="space-y-12">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-8">
+        <div className="bg-white/60 backdrop-blur-xl rounded-[2rem] md:rounded-[2.5rem] border border-white p-6 md:p-10 shadow-sm relative overflow-hidden">
+          <div className="space-y-10 md:space-y-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 xl:gap-x-16 gap-y-6 md:gap-y-8">
               <InputField label="Full Name" value={userForm.fullName} onChange={(e) => setUserForm({...userForm, fullName: e.target.value})} />
               <InputField label="Email Address" value={userForm.email} onChange={(e) => setUserForm({...userForm, email: e.target.value})} />
               <InputField label="Username" value={userForm.user_name} onChange={(e) => setUserForm({...userForm, user_name: e.target.value})} />
             </div>
 
             <div className="pt-4">
-              <div className="flex items-center gap-2 mb-8">
+              <div className="flex items-center gap-2 mb-6 md:mb-8">
                 <span className="h-px w-8 bg-primary/20"></span>
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60">Security Update</span>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 xl:gap-x-16 gap-y-6 md:gap-y-8">
                 <InputField 
                   label="New Password" 
                   type="password" 
@@ -453,17 +473,17 @@ const SettingsPage = () => {
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-6">
+            <div className="flex flex-col sm:flex-row items-center justify-between pt-6 border-t border-gray-100/50 gap-4">
               <p className="text-[10px] text-gray-400 font-medium italic">
                 Last updated: {userInfo?.updatedAt ? new Date(userInfo.updatedAt).toLocaleDateString() : 'N/A'}
               </p>
-              <Button className="bg-primary px-10" onClick={handleUserSave} disabled={updateUser.isPending}>
+              <Button className="bg-primary w-full sm:w-auto px-10" onClick={handleUserSave} disabled={updateUser.isPending}>
                 {updateUser.isPending ? 'Updating...' : 'Update Profile'}
               </Button>
             </div>
           </div>
         </div>
-      </section>
+      </section>  
 
       {/* Modals remain exactly as defined previously but with restored logic... */}
       <Modal isOpen={isOrgModalOpen} onClose={() => setIsOrgModalOpen(false)} title="Edit Organization" onSave={handleOrgSave} saveLabel="Save Changes" isLoading={updateOrgMutation.isPending} isSaveDisabled={isUploadingLogo}>
@@ -480,14 +500,7 @@ const SettingsPage = () => {
         </div>
       </Modal>
 
-      <Modal isOpen={isResendModalOpen} onClose={() => setIsResendModalOpen(false)} title="Resend Invitation">
-        <div className="space-y-6">
-          <p className="text-sm text-gray-500">Send a new invitation link to <strong>{selectedInvite?.email}</strong>?</p>
-          <div className="flex gap-3 justify-end"><Button variant="ghost" onClick={() => setIsResendModalOpen(false)}>Cancel</Button><Button className="bg-primary" onClick={handleResend} isLoading={resendInviteMutation.isPending}>Resend Now</Button></div>
-        </div>
-      </Modal>
-
-      <Modal isOpen={isRevokeModalOpen} onClose={() => setIsRevokeModalOpen(false)} title="Revoke Invitation">
+<Modal isOpen={isRevokeModalOpen} onClose={() => setIsRevokeModalOpen(false)} title="Revoke Invitation">
         <div className="space-y-6">
            <div className="flex items-start gap-4 bg-orange-50 p-4 rounded-xl border border-orange-100">
               <AlertCircle className="text-orange-500 w-6 h-6 shrink-0" />

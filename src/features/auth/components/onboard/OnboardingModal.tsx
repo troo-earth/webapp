@@ -8,6 +8,7 @@ import { onboardingSchema } from '../../utils/authSchema';
 import { COUNTRY_OPTIONS } from '@/lib/constants';
 import { SelectField } from '@/components/ui/input/SelectField';
 import { useOnboarding } from '../../hooks/useAuthMutations';
+import { notify } from '@/components/global/Toast';
 
 interface OnboardingModalProps {
   onSuccess: () => void;
@@ -43,6 +44,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({onSuccess}) => 
         fieldErrors[String(issue.path[0])] = issue.message;
       });
       setErrors(fieldErrors);
+      notify.error(result.error.issues[0].message);
       return;
     }
 
